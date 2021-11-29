@@ -1,0 +1,10 @@
+.idea
+.vscode
+/.project
+/bin
+/doc/功能接口文档.pdf
+/pkg
+/log
+/temp
+/src/protocol/*
+.env
