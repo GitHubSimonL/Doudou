@@ -1,5 +1,10 @@
 package network
 
-// IConn 抽象连接
-type IConn interface {
+import (
+	"net"
+)
+
+type Session struct {
+	SessionID int64
+	Conn      net.Conn
 }
