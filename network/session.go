@@ -17,14 +17,24 @@ type ISession interface {
 	IsClosed() bool                    // 是否关闭
 	Close()                            // 关闭
 	SetReadMsgFunc(readMsgFunc)        // 设置读消息方法
+	GetSessionID() uint32
 }
 
 type BaseSession struct {
-	SessionID uint32
+	sessionID uint32
+	userID    int64
 	conn      net.Conn
 	msgChan   chan INetMsg
 	isClosed  bool
 	readMsgFunc
+}
+
+func (b *BaseSession) BindUserID(userID int64) {
+	b.userID = userID
+}
+
+func (b *BaseSession) GetSessionID() uint32 {
+	return b.sessionID
 }
 
 func (b *BaseSession) receiveMsg() {
@@ -118,6 +128,16 @@ func (b *BaseSession) Start() {
 				return
 			}
 
+			if b.userID > 0 && netMsg.GetUserID() == 0 {
+				netMsg.SetUserID(b.userID)
+			}
+
+			if b.userID == 0 && netMsg.GetUserID() > 0 {
+				b.BindUserID(b.userID)
+			}
+
+			netMsg.SetSessionID(b.GetSessionID())
+
 			b.msgChan <- netMsg
 		}
 	}()
@@ -133,7 +153,7 @@ func newBaseSession(conn net.Conn) ISession {
 	}()
 
 	session := &BaseSession{
-		SessionID: curSessionID,
+		sessionID: curSessionID,
 		conn:      conn,
 	}
 

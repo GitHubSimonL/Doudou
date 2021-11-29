@@ -42,6 +42,8 @@ type INetMsg interface {
 	Encode() (bData []byte)
 	GetSessionID() uint32   // 获取消息的会话ID
 	SetSessionID(id uint32) // 消息获得后，设置来自那个session，方便处理逻辑后回包
+	SetUserID(userID int64) // 设置玩家ID
+	GetUserID() int64
 }
 
 type NetMsg struct {
