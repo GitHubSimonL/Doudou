@@ -95,6 +95,8 @@ func (b *BaseSession) SendMsg(msg INetMsg) {
 		return
 	}
 
+	b.conn.Write(data)
+
 	isSuccess = true
 	return
 }
