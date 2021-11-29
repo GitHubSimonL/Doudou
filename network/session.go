@@ -20,11 +20,12 @@ type ISession interface {
 }
 
 type BaseSession struct {
-	sessionID uint32
-	userID    int64
-	conn      net.Conn
-	msgChan   chan INetMsg
-	isClosed  bool
+	sessionID      uint32
+	userID         int64
+	conn           net.Conn
+	receiveMsgChan chan INetMsg // 这个直接和server共用一个channel
+	sendMsgChan    chan INetMsg
+	isClosed       bool
 	readMsgFunc
 }
 
@@ -68,12 +69,12 @@ func (b *BaseSession) IsClosed() bool {
 	return b.isClosed
 }
 
-func (b *BaseSession) SetSvrReceiveMsgChan(msgChan chan INetMsg) {
-	if msgChan == nil {
+func (b *BaseSession) SetSvrReceiveMsgChan(receiveMsgChan chan INetMsg) {
+	if receiveMsgChan == nil {
 		return
 	}
 
-	b.msgChan = msgChan
+	b.receiveMsgChan = receiveMsgChan
 }
 
 func (b *BaseSession) SendMsg(msg INetMsg) {
@@ -133,7 +134,7 @@ func (b *BaseSession) Start() {
 
 			netMsg.SetSessionID(b.GetSessionID())
 
-			b.msgChan <- netMsg
+			b.receiveMsgChan <- netMsg
 		}
 	}()
 }
