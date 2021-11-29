@@ -28,6 +28,11 @@ func (ts *TCPServer) StartListen(port string, receiveFunc genSession) {
 		return
 	}
 
+	if ts.readMsgFunc == nil {
+		logger.LogErrf("server readMsgFunc is nil", fmt.Sprintf("err %v", err))
+		return
+	}
+
 	ts.SetState(SERVER_STATUS_RUNNING)
 	go func() {
 		for ts.GetState() == SERVER_STATUS_RUNNING {
@@ -47,15 +52,16 @@ func (ts *TCPServer) StartListen(port string, receiveFunc genSession) {
 			}
 
 			newSession.SetSvrReceiveMsgChan(ts.GetReceiveMsgChan())
+			newSession.SetReadMsgFunc(ts.readMsgFunc)
 			newSession.Start()
 		}
 	}()
 
 }
 
-func NewTCPServerAgent(whiteListFile string) (server *TCPServer) {
+func NewTCPServerAgent(whiteListFile string, ops ...Option) (server *TCPServer) {
 	newAgent := TCPServer{
-		ServerBase: NewServerBase(),
+		ServerBase: newServerBase(ops...),
 	}
 
 	if len(whiteListFile) > 0 && !newAgent.LoadWhiteList(whiteListFile) {

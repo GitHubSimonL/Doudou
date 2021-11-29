@@ -16,6 +16,7 @@ type ISession interface {
 	Start()                            // 开始工作
 	IsClosed() bool                    // 是否关闭
 	Close()                            // 关闭
+	SetReadMsgFunc(readMsgFunc)        // 设置读消息方法
 }
 
 type BaseSession struct {
@@ -23,6 +24,23 @@ type BaseSession struct {
 	conn      net.Conn
 	msgChan   chan INetMsg
 	isClosed  bool
+	readMsgFunc
+}
+
+func (b *BaseSession) receiveMsg() {
+	panic("implement me")
+}
+
+func (b *BaseSession) sendMsg(data []byte) {
+	panic("implement me")
+}
+
+func (b *BaseSession) SetReadMsgFunc(fnc readMsgFunc) {
+	if fnc == nil {
+		return
+	}
+
+	b.readMsgFunc = fnc
 }
 
 func (b *BaseSession) Close() {
@@ -85,24 +103,27 @@ func (b *BaseSession) Start() {
 			b.Close()
 		}()
 
-		var rd = bufio.NewReader(b.conn)
+		if b.readMsgFunc == nil {
+			return
+		}
 
+		var rd = bufio.NewReader(b.conn)
 		for {
 			if b.IsClosed() {
 				return
 			}
 
-			data, header := readMsg(b.conn, rd, MaxInternalMessageLen)
-			if data == nil || header == nil {
+			netMsg := b.readMsgFunc(b.conn, rd)
+			if netMsg == nil {
 				return
 			}
-			b.msgChan <- data
-		}
 
+			b.msgChan <- netMsg
+		}
 	}()
 }
 
-func newBaseSession(conn net.Conn) *BaseSession {
+func newBaseSession(conn net.Conn) ISession {
 	if conn == nil {
 		return nil
 	}

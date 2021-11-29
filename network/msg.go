@@ -1,8 +1,6 @@
 package network
 
 import (
-	"Doudou/lib/logger"
-	"encoding/binary"
 	"errors"
 	"io"
 	"net"
@@ -38,11 +36,12 @@ type MsgPackHeader struct {
 	CRC    uint32
 }
 
-const ConnTimeOut = 2 * time.Minute
+const ConnTimeOut = 2 * time.Minute // 链接超时时间（每次接收消息后，会将超时设置成2分钟过后）
 
 type INetMsg interface {
 	Encode() (bData []byte)
-	Decode(bData []byte) NetMsg
+	GetSessionID() uint32   // 获取消息的会话ID
+	SetSessionID(id uint32) // 消息获得后，设置来自那个session，方便处理逻辑后回包
 }
 
 type NetMsg struct {
@@ -53,45 +52,9 @@ type NetMsg struct {
 }
 
 // 读消息
-func readMsg(conn net.Conn, rd io.Reader, maxMsgBodyLen uint32) ([]byte, *MsgPackHeader) {
+func defaultReadMsg(conn net.Conn, rd io.Reader) INetMsg {
 	defer func() {
 		conn.SetReadDeadline(time.Now().Add(ConnTimeOut))
 	}()
-
-	headerBuff := make([]byte, NetMessageHeaderSize)
-	_, err := io.ReadFull(rd, headerBuff)
-
-	errF := func(err error) {
-		if errors.Is(err, io.EOF) {
-			logger.Logf("Recv EOF: %v.", conn.RemoteAddr())
-		} else {
-			logger.LogWarnf("Recv err: %v %v.", conn.RemoteAddr(), err)
-		}
-	}
-
-	if err != nil {
-		errF(err)
-		return nil, nil
-	}
-
-	header := &MsgPackHeader{
-		Length: binary.BigEndian.Uint32(headerBuff),
-		Flag:   headerBuff[4],
-		MsgID:  binary.BigEndian.Uint32(headerBuff[5:]),
-		CRC:    binary.BigEndian.Uint32(headerBuff[9:]),
-	}
-
-	if header.Length < NetMessageHeaderSize || header.Length > maxMsgBodyLen {
-		logger.LogWarnf("message %d len %d out of range", header.MsgID, header.Length)
-		return nil, nil
-	}
-
-	data := make([]byte, header.Length-NetMessageHeaderSize)
-	_, err = io.ReadFull(rd, data)
-	if err != nil {
-		logger.LogWarnf("Recv msg %d from %v, error: %v.", header.MsgID, conn.RemoteAddr(), err)
-		return nil, nil
-	}
-
-	return data, header
+	return nil
 }

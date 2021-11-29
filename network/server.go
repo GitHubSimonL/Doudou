@@ -3,21 +3,23 @@ package network
 import (
 	"Doudou/lib/logger"
 	"go.uber.org/atomic"
+	"io"
 	"net"
 	"runtime/debug"
 )
 
 type genSession func(conn net.Conn) ISession
+type readMsgFunc func(conn net.Conn, rd io.Reader) INetMsg
 
 // Server抽象接口
 type IServer interface {
-	Close()                                                                              // 关闭
-	AfterClose(callback func())                                                          // 关闭后回调，注意（这里的callback是线程不安全的）
-	GetType() int32                                                                      // 类型
-	GetID() int32                                                                        // ID
-	LoadWhiteList(filename string) bool                                                  // 加载白名单
-	AccessCheck(ip string) bool                                                          // 是否放行
-	StartListen(port string, rDeadLine, wDeadLine int32, receiveFunc genSession) IServer // 开始监听
+	Close()                                                                     // 关闭
+	AfterClose(callback func())                                                 // 关闭后回调，注意（这里的callback是线程不安全的）
+	GetType() int32                                                             // 类型
+	GetID() int32                                                               // ID
+	LoadWhiteList(filename string) bool                                         // 加载白名单
+	AccessCheck(ip string) bool                                                 // 是否放行
+	StartListen(port string, sessionFunc genSession, options ...Option) IServer // 开始监听
 	SetState(state ServerState)
 	GetState() ServerState
 	GetReceiveMsgChan() chan NetMsg // 获取server接收消息channel，将它赋值给conn的的消息接收channel
@@ -31,6 +33,24 @@ const (
 	SERVER_STATUS_STOPPING
 )
 
+type Option func(*ServerBase)
+
+func WithGenSession(genSession genSession) Option {
+	return func(o *ServerBase) {
+		o.genSession = genSession
+	}
+}
+
+func WithReadMsgFunc(readMsgFunc readMsgFunc) Option {
+	return func(o *ServerBase) {
+		o.readMsgFunc = readMsgFunc
+	}
+}
+
+func deefaultGenSession() {
+
+}
+
 type ServerBase struct {
 	svrType   int32
 	svrID     int32
@@ -39,17 +59,33 @@ type ServerBase struct {
 	WhiteList
 	Sessions   map[int32]*BaseSession
 	MsgChannel chan INetMsg
+	genSession
+	readMsgFunc
 }
 
 func (s *ServerBase) SetState(state ServerState) {
 	s.state.Store(int32(state))
 }
 
-func NewServerBase() ServerBase {
-	return ServerBase{
+func newServerBase(ops ...Option) ServerBase {
+	serverBase := &ServerBase{
 		closeChan: make(chan struct{}, 1),
 		state:     atomic.NewInt32(int32(SERVER_STATUS_LAUNCHING)),
 	}
+
+	for _, op := range ops {
+		op(serverBase)
+	}
+
+	if serverBase.readMsgFunc == nil {
+		serverBase.readMsgFunc = defaultReadMsg
+	}
+
+	if serverBase.genSession == nil {
+		serverBase.genSession = newBaseSession
+	}
+
+	return *serverBase
 }
 
 func (s *ServerBase) AfterClose(callback func()) {
