@@ -9,7 +9,6 @@ import (
 var curSessionID uint32 = 1
 
 type ISession interface {
-	receiveMsg()                       // 接收消息
 	sendMsg(data []byte)               // 发送消息
 	SetSvrReceiveMsgChan(chan INetMsg) // 设置住
 	SendMsg(msg INetMsg)               // 发送消息
@@ -35,10 +34,6 @@ func (b *BaseSession) BindUserID(userID int64) {
 
 func (b *BaseSession) GetSessionID() uint32 {
 	return b.sessionID
-}
-
-func (b *BaseSession) receiveMsg() {
-	panic("implement me")
 }
 
 func (b *BaseSession) sendMsg(data []byte) {
