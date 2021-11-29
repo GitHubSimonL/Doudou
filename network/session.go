@@ -1,6 +1,8 @@
 package network
 
 import (
+	"Doudou/lib/logger"
+	"bufio"
 	"net"
 )
 
@@ -60,6 +62,7 @@ func (b *BaseSession) SendMsg(msg INetMsg) {
 	defer func() {
 		if !isSuccess {
 			b.Close()
+			return
 		}
 	}()
 
@@ -72,8 +75,31 @@ func (b *BaseSession) SendMsg(msg INetMsg) {
 	return
 }
 
-func (b BaseSession) Start() {
-	panic("implement me")
+func (b *BaseSession) Start() {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.LogErrf("server session panic: %v.", r)
+			}
+
+			b.Close()
+		}()
+
+		var rd = bufio.NewReader(b.conn)
+
+		for {
+			if b.IsClosed() {
+				return
+			}
+
+			data, header := readMsg(b.conn, rd, MaxInternalMessageLen)
+			if data == nil || header == nil {
+				return
+			}
+			b.msgChan <- data
+		}
+
+	}()
 }
 
 func newBaseSession(conn net.Conn) *BaseSession {

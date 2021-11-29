@@ -10,7 +10,7 @@ type TCPServer struct {
 	ServerBase
 }
 
-func (ts *TCPServer) StartListen(port string, rDeadLine, wDeadLine int32, receiveFunc genSession) {
+func (ts *TCPServer) StartListen(port string, receiveFunc genSession) {
 	if receiveFunc == nil {
 		logger.LogErrf("ServerReceiveConnect is nil", "")
 		return
@@ -47,7 +47,7 @@ func (ts *TCPServer) StartListen(port string, rDeadLine, wDeadLine int32, receiv
 			}
 
 			newSession.SetSvrReceiveMsgChan(ts.GetReceiveMsgChan())
-			go newSession.Start()
+			newSession.Start()
 		}
 	}()
 

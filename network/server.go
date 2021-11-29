@@ -12,7 +12,7 @@ type genSession func(conn net.Conn) ISession
 // Server抽象接口
 type IServer interface {
 	Close()                                                                              // 关闭
-	AfterClose(trigger func())                                                           // 关闭
+	AfterClose(callback func())                                                          // 关闭后回调，注意（这里的callback是线程不安全的）
 	GetType() int32                                                                      // 类型
 	GetID() int32                                                                        // ID
 	LoadWhiteList(filename string) bool                                                  // 加载白名单
@@ -38,7 +38,7 @@ type ServerBase struct {
 	state     *atomic.Int32
 	WhiteList
 	Sessions   map[int32]*BaseSession
-	MsgChannel chan NetMsg
+	MsgChannel chan INetMsg
 }
 
 func (s *ServerBase) SetState(state ServerState) {
@@ -52,7 +52,7 @@ func NewServerBase() ServerBase {
 	}
 }
 
-func (s *ServerBase) AfterClose(trigger func()) {
+func (s *ServerBase) AfterClose(callback func()) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -67,8 +67,8 @@ func (s *ServerBase) AfterClose(trigger func()) {
 					continue
 				}
 
-				if trigger != nil {
-					trigger()
+				if callback != nil {
+					callback()
 				}
 
 				return
@@ -93,6 +93,6 @@ func (s *ServerBase) GetID() int32 {
 	return s.svrID
 }
 
-func (s *ServerBase) GetReceiveMsgChan() chan NetMsg {
+func (s *ServerBase) GetReceiveMsgChan() chan INetMsg {
 	return s.MsgChannel
 }
