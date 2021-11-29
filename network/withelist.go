@@ -1,21 +1,7 @@
-/*
-	This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
 package network
 
 import (
+	"Doudou/lib/logger"
 	"io/ioutil"
 	"net"
 	"os"
@@ -28,13 +14,13 @@ type WhiteList struct {
 
 func (this *WhiteList) LoadWhiteList(filename string) (ok bool) {
 	if len(filename) <= 0 {
-		// log.Erro("[accesscontrol] no whitelist filename")
+		logger.LogErrf("[accesscontrol] no whitelist filename")
 		return
 	}
 
 	fileReader, err := os.Open(filename)
 	if err != nil {
-		// log.Erro("[accesscontrol] read whitelist failed %v", err)
+		logger.LogErrf("[accesscontrol] read whitelist failed %v", err)
 		return
 	}
 
@@ -43,7 +29,7 @@ func (this *WhiteList) LoadWhiteList(filename string) (ok bool) {
 	content, err := ioutil.ReadAll(fileReader)
 
 	if err != nil {
-		// log.Erro("[accesscontrol] read whitelist failed %v", err)
+		logger.LogErrf("[accesscontrol] read whitelist failed %v", err)
 		return
 	}
 
@@ -51,9 +37,9 @@ func (this *WhiteList) LoadWhiteList(filename string) (ok bool) {
 		this.whiteList = append(this.whiteList, whitelistIP)
 	}
 
-	// for _, whitelistIP := range this.whiteList {
-	// log.Info("[accesscontrol] loadwhitlist %v", whitelistIP)
-	// }
+	for _, whitelistIP := range this.whiteList {
+		logger.LogInfof("[accesscontrol] loadwhitlist %v", whitelistIP)
+	}
 
 	return true
 }
@@ -66,7 +52,7 @@ func (this *WhiteList) AccessCheck(ip string) (ok bool) {
 	ipAddr, err := net.ResolveTCPAddr("", ip)
 
 	if err != nil || ipAddr == nil {
-		// log.Erro("err %v", err)
+		logger.LogErrf("err %v", err)
 		return
 	}
 
