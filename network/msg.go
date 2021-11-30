@@ -46,11 +46,30 @@ type INetMsg interface {
 	GetUserID() int64
 }
 
-type NetMsg struct {
-	Time     int64
-	MsgId    uint32
-	Payload  interface{}
-	ClientId int64 // 客户端id，如果连接多个同类服务器，记录消息来自哪个连接
+type DefaultMsg struct {
+	data      []byte
+	sessionID uint32
+	userID    int64
+}
+
+func (n *DefaultMsg) Encode() (bData []byte) {
+	return n.data
+}
+
+func (n *DefaultMsg) GetSessionID() uint32 {
+	return n.sessionID
+}
+
+func (n *DefaultMsg) SetSessionID(id uint32) {
+	n.sessionID = id
+}
+
+func (n *DefaultMsg) SetUserID(userID int64) {
+	n.userID = userID
+}
+
+func (n *DefaultMsg) GetUserID() int64 {
+	return n.userID
 }
 
 // 读消息
@@ -58,5 +77,12 @@ func defaultReadMsg(conn net.Conn, rd io.Reader) INetMsg {
 	defer func() {
 		conn.SetReadDeadline(time.Now().Add(ConnTimeOut))
 	}()
-	return nil
+
+	var data []byte
+	_, err := io.ReadFull(rd, data)
+	if err != nil {
+		return nil
+	}
+
+	return &DefaultMsg{data: data}
 }

@@ -65,8 +65,9 @@ func (s *ServerBase) SetState(state ServerState) {
 
 func newServerBase(ops ...Option) ServerBase {
 	serverBase := &ServerBase{
-		closeChan: make(chan struct{}, 1),
-		state:     atomic.NewInt32(int32(SERVER_STATUS_LAUNCHING)),
+		closeChan:  make(chan struct{}, 1),
+		state:      atomic.NewInt32(int32(SERVER_STATUS_LAUNCHING)),
+		MsgChannel: make(chan INetMsg, 512),
 	}
 
 	for _, op := range ops {
