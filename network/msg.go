@@ -78,7 +78,7 @@ func defaultReadMsg(conn net.Conn, rd io.Reader) INetMsg {
 		conn.SetReadDeadline(time.Now().Add(ConnTimeOut))
 	}()
 
-	var data []byte
+	data := make([]byte, 100)
 	_, err := io.ReadFull(rd, data)
 	if err != nil {
 		return nil
