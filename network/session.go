@@ -4,6 +4,7 @@ import (
 	"Doudou/lib/logger"
 	"bufio"
 	"net"
+	"time"
 )
 
 var curSessionID uint32 = 1
@@ -120,6 +121,8 @@ func (b *BaseSession) Start() {
 			if b.IsClosed() {
 				return
 			}
+
+			b.conn.SetDeadline(time.Now().Add(ConnTimeOut))
 
 			netMsg := b.readMsgFunc(b.conn, rd)
 			if netMsg == nil {

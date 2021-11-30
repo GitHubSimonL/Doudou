@@ -36,7 +36,7 @@ type MsgPackHeader struct {
 	CRC    uint32
 }
 
-const ConnTimeOut = 2 * time.Minute // 链接超时时间（每次接收消息后，会将超时设置成2分钟过后）
+const ConnTimeOut = 1 * time.Minute // 链接超时时间（每次接收消息后，会将超时设置成2分钟过后）
 
 type INetMsg interface {
 	Encode() (bData []byte)
@@ -74,10 +74,6 @@ func (n *DefaultMsg) GetUserID() int64 {
 
 // 读消息
 func defaultReadMsg(conn net.Conn, rd io.Reader) INetMsg {
-	defer func() {
-		conn.SetReadDeadline(time.Now().Add(ConnTimeOut))
-	}()
-
 	data := make([]byte, 100)
 	_, err := io.ReadFull(rd, data)
 	if err != nil {
