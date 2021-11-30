@@ -10,13 +10,15 @@ type TCPServer struct {
 	ServerBase
 }
 
-func (ts *TCPServer) StartListen(port string, receiveFunc genSession) {
-	if receiveFunc == nil {
+var _ IServer = (*TCPServer)(nil) //编译期检查是否实现接口
+
+func (ts *TCPServer) StartListen(port string, ops ...Option) {
+	if ts.genSession == nil {
 		logger.LogErrf("ServerReceiveConnect is nil", "")
 		return
 	}
 
-	listenAddr, err := net.ResolveTCPAddr("tcp4", port)
+	listenAddr, err := net.ResolveTCPAddr("tcp4", "127.0.0.1:"+port)
 	if err != nil || listenAddr == nil {
 		logger.LogErrf("start listen failed", fmt.Sprintf("err %v", err))
 		return
@@ -46,7 +48,7 @@ func (ts *TCPServer) StartListen(port string, receiveFunc genSession) {
 				continue
 			}
 
-			newSession := receiveFunc(newConn)
+			newSession := ts.genSession(newConn)
 			if newSession == nil {
 				continue
 			}

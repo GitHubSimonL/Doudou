@@ -13,16 +13,16 @@ type readMsgFunc func(conn net.Conn, rd io.Reader) INetMsg
 
 // Server抽象接口
 type IServer interface {
-	Close()                                                                     // 关闭
-	AfterClose(callback func())                                                 // 关闭后回调，注意（这里的callback是线程不安全的）
-	GetType() int32                                                             // 类型
-	GetID() int32                                                               // ID
-	LoadWhiteList(filename string) bool                                         // 加载白名单
-	AccessCheck(ip string) bool                                                 // 是否放行
-	StartListen(port string, sessionFunc genSession, options ...Option) IServer // 开始监听
+	Close()                                     // 关闭
+	AfterClose(callback func())                 // 关闭后回调，注意（这里的callback是线程不安全的）
+	GetType() int32                             // 类型
+	GetID() int32                               // ID
+	LoadWhiteList(filename string) bool         // 加载白名单
+	AccessCheck(ip string) bool                 // 是否放行
+	StartListen(port string, options ...Option) // 开始监听
 	SetState(state ServerState)
 	GetState() ServerState
-	GetReceiveMsgChan() chan NetMsg // 获取server接收消息channel，将它赋值给conn的的消息接收channel
+	GetReceiveMsgChan() chan INetMsg // 获取server接收消息channel，将它赋值给conn的的消息接收channel
 }
 
 type ServerState int32
@@ -45,10 +45,6 @@ func WithReadMsgFunc(readMsgFunc readMsgFunc) Option {
 	return func(o *ServerBase) {
 		o.readMsgFunc = readMsgFunc
 	}
-}
-
-func deefaultGenSession() {
-
 }
 
 type ServerBase struct {
