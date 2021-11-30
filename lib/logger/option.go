@@ -8,18 +8,18 @@ import (
 type Option func(*Options)
 
 type Options struct {
-	Filename      string //日志保存路径
-	LogLevel      Level  //日志记录级别
-	MaxSize       int    //日志分割的尺寸 MB
-	MaxAge        int    //分割日志保存的时间 day
-	Stacktrace    Level  //记录堆栈的级别
-	IsCloseStdOut bool   //是否关闭标准输出console输出
-	LogType       string //日志类型,普通 或 json
-	MaxBackups    int    //最大日志文件存在数(n+1)
+	Filename      string // 日志保存路径
+	LogLevel      Level  // 日志记录级别
+	MaxSize       int    // 日志分割的尺寸 MB
+	MaxAge        int    // 分割日志保存的时间 day
+	Stacktrace    Level  // 记录堆栈的级别
+	IsCloseStdOut bool   // 是否关闭标准输出console输出
+	LogType       string // 日志类型,普通 或 json
+	MaxBackups    int    // 最大日志文件存在数(n+1)
+	IsASync       bool   // 是否异步写
+	IsCompress    bool   // 是否压缩
+	IsOpenPprof   bool   // 是否打开pprof
 	CallerSkip    int
-	IsASync       bool //是否异步写
-	IsCompress    bool //是否压缩
-	IsOpenPprof   bool //是否打开pprof
 }
 
 func WithLogType(logType string) Option {
@@ -58,7 +58,7 @@ func WithStacktrace(stacktrace Level) Option {
 	}
 }
 
-//是否关闭标准输出
+// 是否关闭标准输出
 func WithIsCloseStdOut(isCloseStdout bool) Option {
 	return func(o *Options) {
 		o.IsCloseStdOut = isCloseStdout
