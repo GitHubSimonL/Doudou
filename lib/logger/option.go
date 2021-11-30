@@ -22,33 +22,33 @@ type Options struct {
 	IsOpenPprof   bool //是否打开pprof
 }
 
-func WithLogType(logtype string) Option {
+func WithLogType(logType string) Option {
 	return func(o *Options) {
-		o.LogType = logtype
+		o.LogType = logType
 	}
 }
 
-func WithFilename(logpath string) Option {
+func WithFilename(logPath string) Option {
 	return func(o *Options) {
-		o.Filename = logpath
+		o.Filename = logPath
 	}
 }
 
-func WithLogLevel(loglevel Level) Option {
+func WithLogLevel(logLevel Level) Option {
 	return func(o *Options) {
-		o.LogLevel = loglevel
+		o.LogLevel = logLevel
 	}
 }
 
-func WithMaxSize(maxsize int) Option {
+func WithMaxSize(maxSize int) Option {
 	return func(o *Options) {
-		o.MaxSize = maxsize
+		o.MaxSize = maxSize
 	}
 }
 
-func WithMaxAge(maxage int) Option {
+func WithMaxAge(maxAge int) Option {
 	return func(o *Options) {
-		o.MaxAge = maxage
+		o.MaxAge = maxAge
 	}
 }
 
@@ -118,7 +118,7 @@ func (ops *Options) getLogger() (lowLogger, highLogger, esLogger *LWriter) {
 	lowLogger = NewLWriter(ops.Filename, ops.MaxSize, ops.MaxBackups, ops.MaxAge, ops.IsCompress, ops.IsASync)
 	highLogger = NewLWriter(ops.Filename+".err", ops.MaxSize, ops.MaxBackups, ops.MaxAge, ops.IsCompress, false)
 
-	//级别较高的日志默认不允许异步写
-	esLogger = NewLWriter(strings.Replace(ops.Filename, ".log", ".es.log", 1), ops.MaxSize, ops.MaxBackups, ops.MaxAge, ops.IsCompress, false) //esLog落地
+	// 级别较高的日志默认不允许异步写
+	esLogger = NewLWriter(strings.Replace(ops.Filename, ".log", ".es.log", 1), ops.MaxSize, ops.MaxBackups, ops.MaxAge, ops.IsCompress, false) // esLog落地
 	return
 }
