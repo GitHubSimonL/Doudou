@@ -4,13 +4,12 @@ import (
 	"Doudou/lib/logger"
 	"go.uber.org/atomic"
 	"io"
-	"net"
 	"runtime/debug"
 	"time"
 )
 
-type genSession func(conn net.Conn) ISession
-type readMsgFunc func(conn net.Conn, rd io.Reader) INetMsg
+type genSession func(conn ICon) ISession
+type readMsgFunc func(rd io.Reader) INetMsg
 
 // Server抽象接口
 type IServer interface {

@@ -27,3 +27,14 @@ func (d *DConn) Close() error {
 	d.isClosed = true
 	return nil
 }
+
+func newConnection(con net.Conn) *DConn {
+	if con == nil {
+		return nil
+	}
+
+	return &DConn{
+		Conn:     con,
+		isClosed: false,
+	}
+}

@@ -3,7 +3,6 @@ package network
 import (
 	"errors"
 	"io"
-	"net"
 )
 
 var (
@@ -70,8 +69,8 @@ func (n *DefaultMsg) GetUserID() int64 {
 }
 
 // 读消息
-func defaultReadMsg(conn net.Conn, rd io.Reader) INetMsg {
-	data := make([]byte, 100)
+func defaultReadMsg(rd io.Reader) INetMsg {
+	data := make([]byte, 10)
 	_, err := io.ReadFull(rd, data)
 	if err != nil {
 		return nil

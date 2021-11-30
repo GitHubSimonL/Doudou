@@ -10,7 +10,7 @@ type TCPServer struct {
 	ServerBase
 }
 
-var _ IServer = (*TCPServer)(nil) //编译期检查是否实现接口
+var _ IServer = (*TCPServer)(nil) // 编译期检查是否实现接口
 
 func (ts *TCPServer) StartListen(port string, ops ...Option) {
 	if ts.genSession == nil {
@@ -40,6 +40,9 @@ func (ts *TCPServer) StartListen(port string, ops ...Option) {
 		for ts.GetState() == SERVER_STATUS_RUNNING {
 			newConn, acErr := listener.Accept()
 			if acErr != nil || newConn == nil {
+				if newConn != nil {
+					newConn.Close()
+				}
 				continue
 			}
 
@@ -48,8 +51,9 @@ func (ts *TCPServer) StartListen(port string, ops ...Option) {
 				continue
 			}
 
-			newSession := ts.genSession(newConn)
+			newSession := ts.genSession(newConnection(newConn))
 			if newSession == nil {
+				newConn.Close()
 				continue
 			}
 

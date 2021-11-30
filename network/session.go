@@ -3,7 +3,6 @@ package network
 import (
 	"Doudou/lib/logger"
 	"bufio"
-	"net"
 	"time"
 )
 
@@ -25,7 +24,7 @@ type ISession interface {
 type BaseSession struct {
 	sessionID      uint32
 	userID         int64
-	conn           net.Conn
+	conn           ICon
 	receiveMsgChan chan INetMsg // 这个直接和server共用一个channel
 	sendMsgChan    chan INetMsg
 	isClosed       bool
@@ -127,7 +126,7 @@ func (b *BaseSession) Start() {
 
 			b.conn.SetDeadline(time.Now().Add(b.ttl))
 
-			netMsg := b.readMsgFunc(b.conn, rd)
+			netMsg := b.readMsgFunc(rd)
 			if netMsg == nil {
 				return
 			}
@@ -147,7 +146,7 @@ func (b *BaseSession) Start() {
 	}()
 }
 
-func newBaseSession(conn net.Conn) ISession {
+func newBaseSession(conn ICon) ISession {
 	if conn == nil {
 		return nil
 	}

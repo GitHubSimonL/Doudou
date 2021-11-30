@@ -38,11 +38,11 @@ func main() {
 	for {
 		select {
 		case <-sendTimer.C:
-			// _, err := conn.Write([]byte{1, 2})
-			// if err != nil {
-			// 	fmt.Printf("wirte err:%v \n", err)
-			// 	return
-			// }
+			_, err := conn.Write([]byte{1, 2})
+			if err != nil {
+				fmt.Printf("wirte err:%v \n", err)
+				return
+			}
 			idx++
 			fmt.Println("send: ", idx)
 
