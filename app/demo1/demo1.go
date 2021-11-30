@@ -9,7 +9,7 @@ import (
 func init() {
 	logger.InitLogger(
 		logger.WithFilename("./log/demo1.log"),
-		logger.WithPprof(true))
+		logger.WithPprof(false))
 }
 
 func main() {
