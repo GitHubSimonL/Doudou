@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"runtime/debug"
+	"time"
 )
 
 type genSession func(conn net.Conn) ISession
@@ -47,6 +48,12 @@ func WithReadMsgFunc(readMsgFunc readMsgFunc) Option {
 	}
 }
 
+func WithConTTLFunc(duration time.Duration) Option {
+	return func(o *ServerBase) {
+		o.conTTL = duration
+	}
+}
+
 type ServerBase struct {
 	svrType   int32
 	svrID     int32
@@ -55,6 +62,7 @@ type ServerBase struct {
 	WhiteList
 	Sessions   map[int32]*BaseSession
 	MsgChannel chan INetMsg
+	conTTL     time.Duration // 连接生效时间（每次接收或发送消息时是顺时延长）
 	genSession
 	readMsgFunc
 }
@@ -68,6 +76,7 @@ func newServerBase(ops ...Option) ServerBase {
 		closeChan:  make(chan struct{}, 1),
 		state:      atomic.NewInt32(int32(SERVER_STATUS_LAUNCHING)),
 		MsgChannel: make(chan INetMsg, 512),
+		conTTL:     1 * time.Minute,
 	}
 
 	for _, op := range ops {

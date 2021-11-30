@@ -9,6 +9,8 @@ import (
 
 var curSessionID uint32 = 1
 
+const ConnTimeOut = 1 * time.Minute // 链接超时时间（每次接收消息后，会将超时设置成2分钟过后）
+
 type ISession interface {
 	sendMsg(data []byte)               // 发送消息
 	SetSvrReceiveMsgChan(chan INetMsg) // 设置住
@@ -27,6 +29,7 @@ type BaseSession struct {
 	receiveMsgChan chan INetMsg // 这个直接和server共用一个channel
 	sendMsgChan    chan INetMsg
 	isClosed       bool
+	ttl            time.Duration
 	readMsgFunc
 }
 
@@ -122,7 +125,7 @@ func (b *BaseSession) Start() {
 				return
 			}
 
-			b.conn.SetDeadline(time.Now().Add(ConnTimeOut))
+			b.conn.SetDeadline(time.Now().Add(b.ttl))
 
 			netMsg := b.readMsgFunc(b.conn, rd)
 			if netMsg == nil {
@@ -156,6 +159,7 @@ func newBaseSession(conn net.Conn) ISession {
 	session := &BaseSession{
 		sessionID: curSessionID,
 		conn:      conn,
+		ttl:       ConnTimeOut,
 	}
 
 	return session

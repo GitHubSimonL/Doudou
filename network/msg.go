@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"time"
 )
 
 var (
@@ -35,8 +34,6 @@ type MsgPackHeader struct {
 	MsgID  uint32
 	CRC    uint32
 }
-
-const ConnTimeOut = 1 * time.Minute // 链接超时时间（每次接收消息后，会将超时设置成2分钟过后）
 
 type INetMsg interface {
 	Encode() (bData []byte)
