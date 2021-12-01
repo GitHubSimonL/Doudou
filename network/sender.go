@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+const (
+	DefaultQueueSize         = 256
+	DefaultCloseChanSize     = 8
+	DefaultCompressThreshold = 1024
+)
+
 // 消息发送器
 type MsgSender struct {
 	conn       ICon
@@ -28,6 +34,10 @@ func (ms *MsgSender) Send(msg INetMsg) error {
 	}
 }
 
+func (ms *MsgSender) Close() {
+	ms.exitSignal <- struct{}{}
+}
+
 // 同步发送数据
 func (ms *MsgSender) SyncSend(msg INetMsg) (err error) {
 	return ms.rawSend(msg)
@@ -49,6 +59,8 @@ func (ms *MsgSender) start() {
 			if r := recover(); r != nil {
 				logger.LogErrf("Sender %v error: %v.", ms, r)
 			}
+
+			close(ms.msgList)
 		}()
 
 		for {
@@ -64,4 +76,16 @@ func (ms *MsgSender) start() {
 			}
 		}
 	}()
+}
+
+func newMsgSender(con ICon, maxMsgAmount int) *MsgSender {
+	size := DefaultQueueSize
+	if maxMsgAmount > 0 {
+		size = maxMsgAmount
+	}
+	return &MsgSender{
+		conn:       con,
+		exitSignal: make(chan struct{}, 1),
+		msgList:    make(chan INetMsg, size),
+	}
 }

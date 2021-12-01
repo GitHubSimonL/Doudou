@@ -43,13 +43,13 @@ type INetMsg interface {
 }
 
 type DefaultMsg struct {
-	data      []byte
+	Data      []byte
 	sessionID uint32
 	userID    int64
 }
 
 func (n *DefaultMsg) Encode() (bData []byte) {
-	return n.data
+	return n.Data
 }
 
 func (n *DefaultMsg) GetSessionID() uint32 {
@@ -70,11 +70,11 @@ func (n *DefaultMsg) GetUserID() int64 {
 
 // 读消息
 func defaultReadMsg(rd io.Reader) INetMsg {
-	data := make([]byte, 10)
+	data := make([]byte, 20)
 	_, err := io.ReadFull(rd, data)
 	if err != nil {
 		return nil
 	}
 
-	return &DefaultMsg{data: data}
+	return &DefaultMsg{Data: data}
 }

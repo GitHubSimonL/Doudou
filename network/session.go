@@ -30,6 +30,7 @@ type BaseSession struct {
 	isClosed       bool
 	ttl            time.Duration
 	readMsgFunc
+	sender *MsgSender
 }
 
 func (b *BaseSession) BindUserID(userID int64) {
@@ -105,6 +106,8 @@ func (b *BaseSession) SendMsg(msg INetMsg) {
 }
 
 func (b *BaseSession) Start() {
+	b.sender.start()
+
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -159,6 +162,7 @@ func newBaseSession(conn ICon) ISession {
 		sessionID: curSessionID,
 		conn:      conn,
 		ttl:       ConnTimeOut,
+		sender:    newMsgSender(conn, 0),
 	}
 
 	return session
