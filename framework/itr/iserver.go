@@ -9,5 +9,5 @@ type IServer interface {
 	CallConnStartHookFunc(conn IConnection)      // 调用链接创建hood方法
 	SetConnEndHookFunc(func(conn IConnection))   // 链接断开时的hood方法
 	CallConnEndHookFunc(conn IConnection)        // 调用链接断开hood方法
-	Packet() Packet
+	Packet() IPacket
 }
