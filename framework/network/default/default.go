@@ -1,4 +1,4 @@
-package network
+package _default
 
 const (
 	DefaultPort             = 10086
