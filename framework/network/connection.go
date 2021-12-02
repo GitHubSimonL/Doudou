@@ -85,7 +85,7 @@ func (c *Connection) SendMsg(msgID uint32, data []byte) error {
 		return errors.New("Connection is closed!")
 	}
 
-	sp := c.Server.Packet()
+	sp := c.Server.GetPacket()
 	msg, err := sp.Pack(NewMessage(msgID, data))
 	if err != nil {
 		logger.LogErrf("Pack error msg ID = ", msgID)
@@ -104,7 +104,7 @@ func (c *Connection) SendBuffMsg(msgID uint32, data []byte) error {
 		return errors.New("Connection is closed!")
 	}
 
-	sp := c.Server.Packet()
+	sp := c.Server.GetPacket()
 	msg, err := sp.Pack(NewMessage(msgID, data))
 	if err != nil {
 		logger.LogErrf("Pack error msg ID = ", msgID)
@@ -219,7 +219,7 @@ func (c *Connection) ReaderTaskStart() {
 		default:
 			header := pool.Get().([]byte)
 			if header == nil {
-				header = make([]byte, c.Server.Packet().GetHeadLen())
+				header = make([]byte, c.Server.GetPacket().GetHeadLen())
 			}
 
 			// 获取包头
@@ -231,7 +231,7 @@ func (c *Connection) ReaderTaskStart() {
 			}
 
 			// 解包
-			msg, err := c.Server.Packet().Unpack(header)
+			msg, err := c.Server.GetPacket().Unpack(header)
 			if err != nil {
 				fmt.Println("unpack error ", err)
 				return
