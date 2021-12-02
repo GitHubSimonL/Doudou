@@ -1,4 +1,4 @@
-package nerwork
+package network
 
 import "Doudou/framework/itr"
 
