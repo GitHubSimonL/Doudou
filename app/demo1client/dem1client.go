@@ -50,7 +50,7 @@ func main() {
 	// }
 
 	addr := "127.0.0.1:11223"
-	client, err := network.NewTcpClient(addr)
+	client, err := framework.NewTcpClient(addr)
 	if client == nil || err != nil {
 		return
 	}
@@ -60,7 +60,7 @@ func main() {
 	for {
 		select {
 		case <-sendTimer.C:
-			client.Send(&network.DefaultMsg{Data: []byte{1, 2, 3}})
+			client.Send(&framework.DefaultMsg{Data: []byte{1, 2, 3}})
 			idx++
 			fmt.Println("send: ", idx)
 

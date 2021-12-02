@@ -13,7 +13,7 @@ func init() {
 }
 
 func main() {
-	svr := network.NewTCPServerAgent("")
+	svr := framework.NewTCPServerAgent("")
 	svr.StartListen("11223")
 
 	for {
