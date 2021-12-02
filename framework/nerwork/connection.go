@@ -15,23 +15,17 @@ import (
 var pool sync.Pool
 
 type Connection struct {
-	Server itr.IServer // 当前Conn属于哪个Server
-	conn   net.Conn    // 当前连接的socket TCP套接字
-	connID uint32      // 当前连接的ID 也可以称作为SessionID，ID全局唯一
-
-	MsgHandler itr.IHandleMgr // 消息管理MsgID和对应处理方法的消息管理模块
-
-	msgChan     chan []byte // 无缓冲管道
-	msgBuffChan chan []byte // 有缓冲管道
-
-	property     map[string]interface{} // 链接属性
-	propertyLock sync.Mutex             // 保护当前property的锁
-	isClosed     bool                   // 当前连接的关闭状态
-
-	// ctx用于控制协程间同步链接停止
-	ctx    context.Context
-	cancel context.CancelFunc
-
+	Server      itr.IServer            // 当前Conn属于哪个Server
+	conn        net.Conn               // 当前连接的socket TCP套接字
+	connID      uint32                 // 当前连接的ID 也可以称作为SessionID，ID全局唯一
+	MsgHandler  itr.IHandleMgr         // 消息管理MsgID和对应处理方法的消息管理模块
+	msgChan     chan []byte            // 无缓冲管道
+	msgBuffChan chan []byte            // 有缓冲管道
+	isClosed    bool                   // 当前连接的关闭状态
+	ctx         context.Context        // 用于控制消息发送与接收协程间同步链接停止
+	cancel      context.CancelFunc     // 用于控制消息发送与接收协程间同步链接停止
+	metaLock    sync.Mutex             // 保护当前meta的锁
+	meta        map[string]interface{} // 链接属性
 	sync.RWMutex
 }
 
@@ -120,12 +114,26 @@ func (c *Connection) SendBuffMsg(msgID uint32, data []byte) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(key string, value interface{}) {
-	panic("implement me")
+func (c *Connection) SetMeta(key string, value interface{}) {
+	c.metaLock.Lock()
+	defer c.metaLock.Unlock()
+
+	if c.meta == nil {
+		c.meta = make(map[string]interface{})
+	}
+
+	c.meta[key] = value
 }
 
-func (c *Connection) GetProperty(key string) (interface{}, error) {
-	panic("implement me")
+func (c *Connection) GetMeta(key string) (interface{}, error) {
+	c.metaLock.Lock()
+	defer c.metaLock.Unlock()
+	value, ok := c.meta[key]
+	if !ok {
+		return nil, fmt.Errorf("Meta key %v not found!", key)
+	}
+
+	return value, nil
 }
 
 func (c *Connection) RemoveProperty(key string) {
@@ -143,16 +151,16 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgHandleMg
 	}
 
 	return &Connection{
-		Server:       server,
-		conn:         conn,
-		connID:       connID,
-		MsgHandler:   msgHandleMgr,
-		msgChan:      make(chan []byte),
-		msgBuffChan:  make(chan []byte, msgBufferLen),
-		RWMutex:      sync.RWMutex{},
-		property:     make(map[string]interface{}),
-		propertyLock: sync.Mutex{},
-		isClosed:     false,
+		Server:      server,
+		conn:        conn,
+		connID:      connID,
+		MsgHandler:  msgHandleMgr,
+		msgChan:     make(chan []byte),
+		msgBuffChan: make(chan []byte, msgBufferLen),
+		RWMutex:     sync.RWMutex{},
+		meta:        make(map[string]interface{}),
+		metaLock:    sync.Mutex{},
+		isClosed:    false,
 	}
 
 }
