@@ -14,6 +14,8 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 	}
 
 	server.SetPacket(NewNetPacket())
+	server.SetConnMgr(NewConnMgr())
+
 	for _, op := range ops {
 		op(server)
 	}

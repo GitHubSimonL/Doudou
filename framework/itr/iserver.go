@@ -14,45 +14,10 @@ type IServer interface {
 	SetIP(ip string)                                                   // 设置IP
 	SetPort(port int)                                                  // 设置端口
 	SetMsgHandlerMgr(mgr IHandleMgr)                                   // 设置协议处理器
+	SetConnMgr(mgr IConnMgr)                                           // 设置协议处理器
 	SetConnectHookFunc(connected, disConnected func(conn IConnection)) // 设置网络连接方法
 	CallConnStartHookFunc(conn IConnection)                            // 调用链接创建hook方法
 	CallConnEndHookFunc(conn IConnection)                              // 调用链接断开hook方法
-}
-
-func WithSvrType(svrType int32) Option {
-	return func(server IServer) {
-		server.SetType(svrType)
-	}
-}
-
-func WithSvrID(svrID int32) Option {
-	return func(server IServer) {
-		server.SetID(svrID)
-	}
-}
-
-func WithIP(ip string) Option {
-	return func(server IServer) {
-		server.SetIP(ip)
-	}
-}
-
-func WithPort(port int) Option {
-	return func(server IServer) {
-		server.SetPort(port)
-	}
-}
-
-func WithPacket(packet IPacket) Option {
-	return func(server IServer) {
-		server.SetPacket(packet)
-	}
-}
-
-func WithConnHookFunc(connected, disconnected func(conn IConnection)) Option {
-	return func(server IServer) {
-		server.SetConnectHookFunc(connected, disconnected)
-	}
 }
 
 // server 基类实现
@@ -128,6 +93,10 @@ func (b *BaseServer) SetMsgHandlerMgr(mgr IHandleMgr) {
 	}
 
 	b.msgHandler = mgr
+}
+
+func (b *BaseServer) SetConnMgr(mgr IConnMgr) {
+	b.connMgr = mgr
 }
 
 func (b *BaseServer) SetConnectHookFunc(connected, disConnected func(conn IConnection)) {
