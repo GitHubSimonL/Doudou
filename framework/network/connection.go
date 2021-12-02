@@ -50,10 +50,11 @@ func (c *Connection) Stop() {
 
 	defer func() {
 		c.cancel()
-		c.GetConn().Close()
+		c.conn.Close()
 
 		close(c.msgBuffChan)
 		close(c.msgChan)
+		c.isClosed = true
 	}()
 
 	c.Server.CallConnEndHookFunc(c)
