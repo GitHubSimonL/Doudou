@@ -9,6 +9,8 @@ type Request struct {
 	msg  itr.IMessage
 }
 
+var _ itr.IRequest = (*Request)(nil)
+
 func (r *Request) GetConnection() itr.IConnection {
 	return r.conn
 }

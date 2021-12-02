@@ -1,10 +1,14 @@
 package nerwork
 
+import "Doudou/framework/itr"
+
 type Message struct {
 	Len   uint32
 	MsgID uint32
 	Data  []byte
 }
+
+var _ itr.IMessage = (*Message)(nil)
 
 func NewMessage(msgID uint32, data []byte) *Message {
 	return &Message{
