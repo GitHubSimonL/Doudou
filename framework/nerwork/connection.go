@@ -136,12 +136,18 @@ func (c *Connection) GetMeta(key string) (interface{}, error) {
 	return value, nil
 }
 
-func (c *Connection) RemoveProperty(key string) {
-	panic("implement me")
+func (c *Connection) RemoveMeta(key string) {
+	c.metaLock.Lock()
+	defer c.metaLock.Unlock()
+
+	delete(c.meta, key)
 }
 
 func (c *Connection) IsClosed() bool {
-	panic("implement me")
+	c.RLock()
+	defer c.RUnlock()
+
+	return c.isClosed
 }
 
 // 生成一个链接对象

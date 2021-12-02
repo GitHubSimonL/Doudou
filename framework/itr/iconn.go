@@ -17,6 +17,6 @@ type IConnection interface {
 	SendBuffMsg(msgID uint32, data []byte) error // 直接将Message数据发送给远程的TCP客户端(有缓冲)
 	SetMeta(key string, value interface{})       // 设置链接属性
 	GetMeta(key string) (interface{}, error)     // 获取链接属性
-	RemoveProperty(key string)                   // 移除链接属性
+	RemoveMeta(key string)                       // 移除链接属性
 	IsClosed() bool                              // 链接是否已关闭
 }
