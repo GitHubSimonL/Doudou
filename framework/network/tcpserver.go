@@ -3,17 +3,25 @@ package network
 import "Doudou/framework/itr"
 
 type TcpServer struct {
-	svrType int32
-	sveID   int32
-	ip      string
-	port    int
+	svrType            int32
+	sveID              int32
+	ip                 string
+	port               int
+	onConnConnected    func(conn itr.IConnection) // 简历链接hookFunc
+	onConnDisconnected func(conn itr.IConnection) // 断开链接hookFunc
+	packet             itr.IPacket                // 封包解包管理
+	msgHandler         itr.IHandleMgr             // 协议处理管理器
+	connMgr            itr.IConnMgr               // 链接管理器
 }
 
 var _ itr.IServer = (*TcpServer)(nil)
 
 func NewTcpServer(ops ...itr.Option) itr.IServer {
+	server := &TcpServer{
+		packet: NewNetPacket(),
+	}
 
-	return nil
+	return server
 }
 
 func (t *TcpServer) Start() {
