@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 
-	selfConn := network.NewConnection(nil, conn, 0, 1024, _default.NewApiMgr(1))
+	selfConn := network.NewConnection(nil, conn, 0, 1024, _default.NewApiMgr(1), _default.NewNetPacket())
 	go selfConn.Start()
 
 	ts := time.NewTimer(1 * time.Second)

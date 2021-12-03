@@ -31,6 +31,7 @@ type Connection struct {
 	sync.RWMutex
 	startOnce sync.Once
 	endOnce   sync.Once
+	packet    itr.IPacket
 }
 
 var _ itr.IConnection = (*Connection)(nil)
@@ -89,8 +90,7 @@ func (c *Connection) SendMsg(msgID uint32, data []byte) error {
 		return errors.New("Connection is closed!")
 	}
 
-	sp := c.Server.GetPacket()
-	msg, err := sp.Pack(NewMessage(msgID, data))
+	msg, err := c.packet.Pack(NewMessage(msgID, data))
 	if err != nil {
 		logger.LogErrf("Pack error msg ID = ", msgID)
 		return errors.New("Pack error msg ")
@@ -108,8 +108,7 @@ func (c *Connection) SendBuffMsg(msgID uint32, data []byte) error {
 		return errors.New("Connection is closed!")
 	}
 
-	sp := c.Server.GetPacket()
-	msg, err := sp.Pack(NewMessage(msgID, data))
+	msg, err := c.packet.Pack(NewMessage(msgID, data))
 	if err != nil {
 		logger.LogErrf("Pack error msg ID = ", msgID)
 		return errors.New("Pack error msg ")
@@ -156,7 +155,7 @@ func (c *Connection) IsClosed() bool {
 }
 
 // 生成一个链接对象 (当为client链接时，server对象为空)
-func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int, apiMgr itr.IApiMgr) *Connection {
+func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int, apiMgr itr.IApiMgr, packet itr.IPacket) *Connection {
 	if conn == nil {
 		return nil
 	}
@@ -172,6 +171,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 		meta:        make(map[string]interface{}),
 		metaLock:    sync.Mutex{},
 		isClosed:    false,
+		packet:      packet,
 	}
 
 }
@@ -225,7 +225,7 @@ func (c *Connection) ReaderTaskStart() {
 		default:
 
 			// 获取包头
-			header := make([]byte, c.Server.GetPacket().GetHeadLen())
+			header := make([]byte, c.packet.GetHeadLen())
 			if _, err := io.ReadFull(br, header); err != nil {
 				if err != io.EOF {
 					logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
@@ -234,7 +234,7 @@ func (c *Connection) ReaderTaskStart() {
 			}
 
 			// 解包
-			msg, err := c.Server.GetPacket().Unpack(header)
+			msg, err := c.packet.Unpack(header)
 			if err != nil {
 				fmt.Println("unpack error ", err)
 				return
