@@ -30,6 +30,10 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 }
 
 func (t *TcpServer) Start() {
+	defer func() {
+		logger.LogDebugf("server start finish.")
+	}()
+
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -85,5 +89,9 @@ func (t *TcpServer) Start() {
 }
 
 func (t *TcpServer) Stop() {
-	panic("implement me")
+	defer func() {
+		logger.LogDebugf("server stop finish.")
+	}()
+
+	t.GetConnMgr().ClearConn()
 }
