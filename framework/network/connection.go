@@ -2,6 +2,7 @@ package network
 
 import (
 	"Doudou/framework/itr"
+	. "Doudou/framework/network/default"
 	"Doudou/lib/logger"
 	"bufio"
 	"context"
@@ -18,7 +19,7 @@ type Connection struct {
 	Server      itr.IServer            // 当前Conn属于哪个Server
 	conn        net.Conn               // 当前连接的socket TCP套接字
 	connID      uint32                 // 当前连接的ID 也可以称作为SessionID，ID全局唯一
-	MsgHandler  itr.IHandleMgr         // 消息管理MsgID和对应处理方法的消息管理模块
+	ApiMgr      itr.IApiMgr            // 消息管理MsgID和对应处理方法的消息管理模块
 	msgChan     chan []byte            // 无缓冲管道
 	msgBuffChan chan []byte            // 有缓冲管道
 	isClosed    bool                   // 当前连接的关闭状态
@@ -152,8 +153,8 @@ func (c *Connection) IsClosed() bool {
 }
 
 // 生成一个链接对象
-func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgHandleMgr itr.IHandleMgr, msgBufferLen int) *Connection {
-	if server == nil || conn == nil || msgHandleMgr == nil {
+func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int) *Connection {
+	if server == nil || conn == nil {
 		return nil
 	}
 
@@ -161,7 +162,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgHandleMg
 		Server:      server,
 		conn:        conn,
 		connID:      connID,
-		MsgHandler:  msgHandleMgr,
+		ApiMgr:      server.GetApiMgr(),
 		msgChan:     make(chan []byte),
 		msgBuffChan: make(chan []byte, msgBufferLen),
 		RWMutex:     sync.RWMutex{},
@@ -256,13 +257,13 @@ func (c *Connection) ReaderTaskStart() {
 				msg:  msg,
 			}
 
-			if c.MsgHandler.GetTaskQueueAmount() > 1 { // 多任务处理
-				c.MsgHandler.AddMgsToTaskPool(req)
+			if c.ApiMgr.GetTaskQueueAmount() > 1 { // 多任务处理
+				c.ApiMgr.AddMgsToTaskPool(req)
 				continue
 			}
 
 			// 单协程处理
-			c.MsgHandler.DoMsgHandler(req)
+			c.ApiMgr.DoMsgHandler(req)
 		}
 	}
 }

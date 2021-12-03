@@ -6,20 +6,26 @@ type IServer interface {
 	Start()                                                            // 启动服务器
 	Stop()                                                             // 停止
 	SetHandler(msgID uint32, handle IHandle)                           // 根据MsgID设置handle方法
-	GetConnMgr() IConnMgr                                              // 获取server所有链接管理器
+	GetApiMgr() IApiMgr                                                // 协议处理管理器
 	GetPacket() IPacket                                                // 数据打包与解包对象
 	SetPacket(IPacket)                                                 // 设置数据打包与解包对象
-	SetType(svrType int32)                                             // 设置类型
-	SetID(svrID int32)                                                 // 设置ID
-	SetIP(ip string)                                                   // 设置IP
-	SetPort(port int)                                                  // 设置端口
 	SetMsgHandlerMgr(mgr IApiMgr)                                      // 设置协议处理器
-	SetConnMgr(mgr IConnMgr)                                           // 设置协议处理器
+	GetConnMgr() IConnMgr                                              // 获取server所有链接管理器
+	SetConnMgr(mgr IConnMgr)                                           // 设置链接管理器
 	SetConnectHookFunc(connected, disConnected func(conn IConnection)) // 设置网络连接方法
 	CallConnStartHookFunc(conn IConnection)                            // 调用链接创建hook方法
 	CallConnEndHookFunc(conn IConnection)                              // 调用链接断开hook方法
 	LoadWhiteList(filename string) bool                                // 加载白名单
 	AccessCheck(ip string) bool                                        // 是否放行
+
+	SetType(svrType int32) // 设置类型
+	SetID(svrID int32)     // 设置ID
+	SetIP(ip string)       // 设置IP
+	SetPort(port int)      // 设置端口
+	GetType() int32        // 获取类型
+	GetID() int32          // 获取ID
+	GetIP() string         // 获取IP
+	GetPort() int          // 获取端口
 }
 
 // server 基类实现
@@ -121,4 +127,24 @@ func (b *BaseServer) CallConnEndHookFunc(conn IConnection) {
 	}
 
 	b.onConnDisconnected(conn)
+}
+
+func (b *BaseServer) GetApiMgr() IApiMgr {
+	return b.apiMgr
+}
+
+func (b *BaseServer) GetType() int32 {
+	return b.svrType
+}
+
+func (b *BaseServer) GetID() int32 {
+	return b.sveID
+}
+
+func (b *BaseServer) GetIP() string {
+	return b.GetIP()
+}
+
+func (b *BaseServer) GetPort() int {
+	return b.port
 }

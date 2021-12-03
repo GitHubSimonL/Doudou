@@ -2,6 +2,9 @@ package network
 
 import (
 	"Doudou/framework/itr"
+	"Doudou/lib/logger"
+	"fmt"
+	"net"
 )
 
 type TcpServer struct {
@@ -27,7 +30,51 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 }
 
 func (t *TcpServer) Start() {
-	panic("implement me")
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				logger.LogErrf("server work catch err. %v", err)
+			}
+		}()
+
+		t.GetApiMgr().StartWorkPool()
+
+		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", t.GetIP(), t.GetPort()))
+		if err != nil {
+			logger.LogWarnf("server start fail. err:%v", err.Error())
+			return
+		}
+
+		listener, err := net.ListenTCP("tcp", addr)
+		if err != nil {
+			logger.LogWarnf("server start fail. err:%v", err.Error())
+			return
+		}
+
+		var cid uint32 = 0
+		for {
+			conn, err := listener.AcceptTCP()
+			if err != nil {
+				logger.LogWarnf("tcp listener catch err. %v", err)
+				continue
+			}
+
+			if t.GetConnMgr().Len() >= 100000 {
+				logger.LogWarnf("The number of network links exceeds the threshold. %v", t.GetConnMgr().Len())
+				conn.Close()
+				continue
+			}
+
+			selfConn := NewConnection(t, conn, cid, 1024)
+			if selfConn == nil {
+				conn.Close()
+				continue
+			}
+
+			cid++
+			go selfConn.Start()
+		}
+	}()
 }
 
 func (t *TcpServer) Stop() {
