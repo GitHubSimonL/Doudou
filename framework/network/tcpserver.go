@@ -97,4 +97,6 @@ func (t *TcpServer) Stop() {
 	}()
 
 	t.GetConnMgr().ClearConn()
+
+	t.StopSignal() <- struct{}{}
 }

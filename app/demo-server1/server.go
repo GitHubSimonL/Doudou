@@ -35,5 +35,9 @@ func main() {
 	servr.Start()
 	servr.SetHandler(1, &Ping{})
 	servr.SetHandler(2, &Ping{})
-	select {}
+	select {
+	case <-servr.StopSignal():
+		return
+
+	}
 }

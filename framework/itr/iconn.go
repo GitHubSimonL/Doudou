@@ -17,5 +17,6 @@ type IConnection interface {
 	GetMeta(key string) (interface{}, error)     // 获取链接属性
 	RemoveMeta(key string)                       // 移除链接属性
 	IsClosed() bool                              // 链接是否已关闭
+	CloseSignal() chan struct{}
 	net.Conn
 }

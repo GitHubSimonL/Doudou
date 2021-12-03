@@ -58,7 +58,8 @@ func main() {
 		case <-ts.C:
 			selfConn.SendMsg(1, []byte{byte(idx)})
 			idx++
+		case <-selfConn.CloseSignal():
+			return
 		}
 	}
-
 }

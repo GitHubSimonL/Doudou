@@ -29,9 +29,10 @@ type Connection struct {
 	metaLock    sync.Mutex             // 保护当前meta的锁
 	meta        map[string]interface{} // 链接属性
 	sync.RWMutex
-	startOnce sync.Once
-	endOnce   sync.Once
-	packet    itr.IPacket
+	startOnce  sync.Once
+	endOnce    sync.Once
+	packet     itr.IPacket
+	closSignal chan struct{}
 }
 
 var _ itr.IConnection = (*Connection)(nil)
@@ -65,6 +66,7 @@ func (c *Connection) Stop() {
 			close(c.msgBuffChan)
 			close(c.msgChan)
 			c.isClosed = true
+			c.closSignal <- struct{}{}
 		}()
 
 		if c.Server != nil {
@@ -154,6 +156,10 @@ func (c *Connection) IsClosed() bool {
 	return c.isClosed
 }
 
+func (c *Connection) CloseSignal() chan struct{} {
+	return c.closSignal
+}
+
 // 生成一个链接对象 (当为client链接时，server对象为空)
 func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int, apiMgr itr.IApiMgr, packet itr.IPacket) *Connection {
 	if conn == nil {
@@ -172,6 +178,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 		metaLock:    sync.Mutex{},
 		isClosed:    false,
 		packet:      packet,
+		closSignal:  make(chan struct{}, 1),
 	}
 
 }

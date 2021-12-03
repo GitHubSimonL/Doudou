@@ -26,6 +26,8 @@ type IServer interface {
 	GetID() int32          // 获取ID
 	GetIP() string         // 获取IP
 	GetPort() int          // 获取端口
+
+	StopSignal() chan struct{}
 }
 
 // server 基类实现
@@ -39,13 +41,16 @@ type BaseServer struct {
 	packet             IPacket                // 封包解包管理
 	apiMgr             IApiMgr                // 协议处理管理器
 	connMgr            IConnMgr               // 链接管理器
+	stopSignal         chan struct{}
 	WhiteList
 }
 
 var _ IServer = (*BaseServer)(nil)
 
 func NewBaseServer() *BaseServer {
-	return &BaseServer{}
+	return &BaseServer{
+		stopSignal: make(chan struct{}, 1),
+	}
 }
 
 func (b *BaseServer) Start() {
@@ -147,4 +152,8 @@ func (b *BaseServer) GetIP() string {
 
 func (b *BaseServer) GetPort() int {
 	return b.port
+}
+
+func (b *BaseServer) StopSignal() chan struct{} {
+	return b.stopSignal
 }
