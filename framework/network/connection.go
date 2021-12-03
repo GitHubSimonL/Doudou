@@ -11,6 +11,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 var pool sync.Pool
@@ -28,38 +29,44 @@ type Connection struct {
 	metaLock    sync.Mutex             // 保护当前meta的锁
 	meta        map[string]interface{} // 链接属性
 	sync.RWMutex
+	startOnce sync.Once
+	endOnce   sync.Once
 }
 
 var _ itr.IConnection = (*Connection)(nil)
 
 func (c *Connection) Start() {
-	c.ctx, c.cancel = context.WithCancel(context.Background())
+	c.startOnce.Do(func() {
+		c.ctx, c.cancel = context.WithCancel(context.Background())
 
-	go c.ReaderTaskStart()
-	go c.WriterTaskStart()
+		go c.ReaderTaskStart()
+		go c.WriterTaskStart()
 
-	c.Server.CallConnStartHookFunc(c)
+		c.Server.CallConnStartHookFunc(c)
+	})
 }
 
 func (c *Connection) Stop() {
-	c.Lock()
-	defer c.Unlock()
+	c.endOnce.Do(func() {
+		c.Lock()
+		defer c.Unlock()
 
-	if c.isClosed {
-		return
-	}
+		if c.isClosed {
+			return
+		}
 
-	defer func() {
-		c.cancel()
-		c.Close()
+		defer func() {
+			c.cancel()
+			c.Close()
 
-		close(c.msgBuffChan)
-		close(c.msgChan)
-		c.isClosed = true
-	}()
+			close(c.msgBuffChan)
+			close(c.msgChan)
+			c.isClosed = true
+		}()
 
-	c.Server.CallConnEndHookFunc(c)
-	c.Server.GetConnMgr().Remove(c)
+		c.Server.CallConnEndHookFunc(c)
+		c.Server.GetConnMgr().Remove(c)
+	})
 }
 
 func (c *Connection) GetContext() context.Context {
@@ -169,6 +176,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 func (c *Connection) WriterTaskStart() {
 	logger.LogDebugf("Conn:%v Writer Goroutine is running!", c.GetConnID())
 	defer logger.LogDebugf("Conn:%v Remote:%v Reader exit!", c.GetConnID(), c.RemoteAddr().String())
+	defer c.Stop()
 
 	for {
 		select {
@@ -189,6 +197,7 @@ func (c *Connection) WriterTaskStart() {
 
 			if _, err := c.Write(data); err != nil {
 				logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
+				return
 			}
 
 		case <-c.ctx.Done():
@@ -242,6 +251,8 @@ func (c *Connection) ReaderTaskStart() {
 					return
 				}
 			}
+
+			c.SetDeadline(time.Now().Add(DefaultConnectionTTL))
 
 			msg.SetData(data)
 			req := &Request{
