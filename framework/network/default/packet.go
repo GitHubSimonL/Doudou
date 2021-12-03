@@ -2,7 +2,6 @@ package _default
 
 import (
 	"Doudou/framework/itr"
-	"Doudou/lib/logger"
 	"bytes"
 	"encoding/binary"
 )
@@ -70,8 +69,6 @@ func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
 	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetData()); err != nil {
 		return nil, err
 	}
-
-	logger.LogDebugf("pack: src:%v dist:%v", msg, dataBuff.Bytes())
 
 	return dataBuff.Bytes(), nil
 }
