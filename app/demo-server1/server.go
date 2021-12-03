@@ -5,6 +5,7 @@ import (
 	"Doudou/framework/network"
 	_default "Doudou/framework/network/default"
 	"Doudou/lib/logger"
+	"time"
 )
 
 type Ping struct {
@@ -13,7 +14,7 @@ type Ping struct {
 
 func (p *Ping) AfterHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	request.GetConnection().SendMsg(1, request.GetData())
+	request.GetConnection().SendMsg(2, request.GetData())
 }
 
 type Pong struct {
@@ -34,10 +35,15 @@ func main() {
 
 	servr.Start()
 	servr.SetHandler(1, &Ping{})
-	servr.SetHandler(2, &Ping{})
+	servr.SetHandler(2, &Pong{})
+
+	go func() {
+		time.Sleep(30 * time.Minute)
+		servr.Stop()
+	}()
+
 	select {
 	case <-servr.StopSignal():
 		return
-
 	}
 }

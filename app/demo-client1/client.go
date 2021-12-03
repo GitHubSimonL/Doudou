@@ -48,16 +48,13 @@ func main() {
 	selfConn := network.NewConnection(nil, conn, 0, 1024, apiMgr, _default.NewNetPacket())
 	go selfConn.Start()
 
-	ts := time.NewTicker(5 * time.Second)
+	ts := time.NewTimer(2 * time.Second)
 	defer ts.Stop()
-
-	idx := 0
 
 	for {
 		select {
 		case <-ts.C:
-			selfConn.SendMsg(1, []byte{byte(idx)})
-			idx++
+			selfConn.SendMsg(1, []byte{byte(1)})
 		case <-selfConn.CloseSignal():
 			return
 		}
