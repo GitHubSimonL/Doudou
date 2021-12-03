@@ -59,6 +59,7 @@ func (t *TcpServer) Start() {
 				continue
 			}
 
+			// 最大链接保持数
 			if t.GetConnMgr().Len() >= 100000 {
 				logger.LogWarnf("The number of network links exceeds the threshold. %v", t.GetConnMgr().Len())
 				conn.Close()
@@ -67,6 +68,12 @@ func (t *TcpServer) Start() {
 
 			selfConn := NewConnection(t, conn, cid, 1024)
 			if selfConn == nil {
+				conn.Close()
+				continue
+			}
+
+			if !t.AccessCheck(selfConn.RemoteAddr().String()) {
+				logger.LogWarnf("blacklist ip connected. %v", selfConn.RemoteAddr().String())
 				conn.Close()
 				continue
 			}
