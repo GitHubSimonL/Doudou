@@ -45,19 +45,19 @@ func main() {
 	apiMgr.RegisterHandle(1, &Ping{})
 	apiMgr.RegisterHandle(2, &Pong{})
 
-	selfConn := network.NewConnection(nil, conn, 0, 1024, _default.NewApiMgr(1), _default.NewNetPacket())
+	selfConn := network.NewConnection(nil, conn, 0, 1024, apiMgr, _default.NewNetPacket())
 	go selfConn.Start()
 
-	ts := time.NewTimer(1 * time.Second)
+	ts := time.NewTicker(5 * time.Second)
+	defer ts.Stop()
+
 	idx := 0
 
 	for {
 		select {
 		case <-ts.C:
-			ts.Reset(1 * time.Second)
 			selfConn.SendMsg(1, []byte{byte(idx)})
 			idx++
-
 		}
 	}
 

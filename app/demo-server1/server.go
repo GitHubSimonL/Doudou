@@ -13,7 +13,7 @@ type Ping struct {
 
 func (p *Ping) AfterHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	request.GetConnection().SendMsg(2, request.GetData())
+	request.GetConnection().SendMsg(1, request.GetData())
 }
 
 type Pong struct {
