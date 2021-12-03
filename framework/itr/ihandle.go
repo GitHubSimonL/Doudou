@@ -5,3 +5,15 @@ type IHandle interface {
 	Handle(request IRequest)      // 处理conn业务的方法
 	AfterHandle(request IRequest) // 处理conn业务之后的钩子方法
 }
+
+type BaseHandle struct {
+}
+
+func (b *BaseHandle) PreHandle(request IRequest) {
+}
+
+func (b *BaseHandle) Handle(request IRequest) {
+}
+
+func (b *BaseHandle) AfterHandle(request IRequest) {
+}

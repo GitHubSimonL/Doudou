@@ -73,7 +73,7 @@ func (t *TcpServer) Start() {
 				continue
 			}
 
-			selfConn := NewConnection(t, conn, cid, 1024)
+			selfConn := NewConnection(t, conn, cid, 1024, t.GetApiMgr())
 			if selfConn == nil {
 				conn.Close()
 				continue

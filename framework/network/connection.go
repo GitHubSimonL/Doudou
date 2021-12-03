@@ -42,7 +42,9 @@ func (c *Connection) Start() {
 		go c.ReaderTaskStart()
 		go c.WriterTaskStart()
 
-		c.Server.CallConnStartHookFunc(c)
+		if c.Server != nil {
+			c.Server.CallConnStartHookFunc(c)
+		}
 	})
 }
 
@@ -64,8 +66,10 @@ func (c *Connection) Stop() {
 			c.isClosed = true
 		}()
 
-		c.Server.CallConnEndHookFunc(c)
-		c.Server.GetConnMgr().Remove(c)
+		if c.Server != nil {
+			c.Server.CallConnEndHookFunc(c)
+			c.Server.GetConnMgr().Remove(c)
+		}
 	})
 }
 
@@ -151,9 +155,9 @@ func (c *Connection) IsClosed() bool {
 	return c.isClosed
 }
 
-// 生成一个链接对象
-func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int) *Connection {
-	if server == nil || conn == nil {
+// 生成一个链接对象 (当为client链接时，server对象为空)
+func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int, apiMgr itr.IApiMgr) *Connection {
+	if conn == nil {
 		return nil
 	}
 
@@ -161,7 +165,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 		Server:      server,
 		Conn:        conn,
 		connID:      connID,
-		ApiMgr:      server.GetApiMgr(),
+		ApiMgr:      apiMgr,
 		msgChan:     make(chan []byte),
 		msgBuffChan: make(chan []byte, msgBufferLen),
 		RWMutex:     sync.RWMutex{},
@@ -219,12 +223,9 @@ func (c *Connection) ReaderTaskStart() {
 		case <-c.ctx.Done():
 			return
 		default:
-			header := pool.Get().([]byte)
-			if header == nil {
-				header = make([]byte, c.Server.GetPacket().GetHeadLen())
-			}
 
 			// 获取包头
+			header := make([]byte, c.Server.GetPacket().GetHeadLen())
 			if _, err := io.ReadFull(br, header); err != nil {
 				if err != io.EOF {
 					logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
@@ -241,9 +242,8 @@ func (c *Connection) ReaderTaskStart() {
 
 			pool.Put(header)
 
-			data := pool.Get().([]byte)
+			data := make([]byte, msg.GetDataLen())
 			if msg.GetDataLen() > 0 {
-				data = make([]byte, msg.GetDataLen())
 				if _, err := io.ReadFull(c, data); err != nil {
 					if err != io.EOF {
 						logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
