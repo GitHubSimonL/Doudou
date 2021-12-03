@@ -6,8 +6,8 @@ import (
 	"Doudou/lib/logger"
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"net"
 	"sync"
@@ -245,7 +245,7 @@ func (c *Connection) ReaderTaskStart() {
 			data := make([]byte, msg.GetDataLen())
 			if msg.GetDataLen() > 0 {
 				if _, err := io.ReadFull(c, data); err != nil {
-					if err != io.EOF {
+					if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 						logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
 					}
 					return
