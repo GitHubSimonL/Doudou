@@ -241,16 +241,14 @@ func (c *Connection) ReaderTaskStart() {
 			}
 
 			// 解包
-			msg, err := c.packet.Unpack(header)
+			head, err := c.packet.UnpackHead(header)
 			if err != nil {
 				fmt.Println("unpack error ", err)
 				return
 			}
 
-			pool.Put(header)
-
-			data := make([]byte, msg.GetDataLen())
-			if msg.GetDataLen() > 0 {
+			data := make([]byte, head.GetDataLen())
+			if head.GetDataLen() > 0 {
 				if _, err := io.ReadFull(c, data); err != nil {
 					if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 						logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
@@ -259,9 +257,9 @@ func (c *Connection) ReaderTaskStart() {
 				}
 			}
 
+			msg := NewMessage(head.GetMsgID(), data)
 			c.SetDeadline(time.Now().Add(DefaultConnectionTTL))
 
-			msg.SetData(data)
 			req := &Request{
 				conn: c,
 				msg:  msg,

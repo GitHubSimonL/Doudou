@@ -1,7 +1,8 @@
 package itr
 
 type IPacket interface {
-	Unpack(binaryData []byte) (IMessage, error)
+	Unpack(head IHead, binaryData []byte) (IMessage, error)
+	UnpackHead(binaryData []byte) (IHead, error)
 	Pack(msg IMessage) ([]byte, error)
-	GetHeadLen() uint32
+	GetHeadLen() int
 }
