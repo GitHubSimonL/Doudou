@@ -25,6 +25,7 @@ func (c *ConnMgr) Add(conn itr.IConnection) {
 
 	c.Lock()
 	defer c.Unlock()
+
 	if oldConn, ok := c.connectionsMap[conn.GetConnID()]; ok {
 		oldConn.Stop()
 	}
