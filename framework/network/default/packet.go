@@ -10,6 +10,8 @@ type NetPack struct {
 	itr.IHead
 }
 
+var _ itr.IPacket = (*NetPack)(nil)
+
 func (n *NetPack) UnpackHead(binaryData []byte) (itr.IHead, error) {
 	head := &itr.Head{
 		MsgID:   0,
@@ -18,7 +20,10 @@ func (n *NetPack) UnpackHead(binaryData []byte) (itr.IHead, error) {
 
 	dataBuff := bytes.NewReader(binaryData)
 
-	if err := binary.Read(dataBuff, binary.LittleEndian, head); err != nil {
+	if err := binary.Read(dataBuff, binary.LittleEndian, &head.MsgID); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(dataBuff, binary.LittleEndian, &head.DataLen); err != nil {
 		return nil, err
 	}
 	return head, nil
@@ -47,11 +52,15 @@ func (n *NetPack) Unpack(head itr.IHead, binaryData []byte) (itr.IMessage, error
 func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
 	dataBuff := bytes.NewBuffer([]byte{})
 
-	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetDataLen()); err != nil {
+	head := n.NewHead()
+	head.SetDataLen(msg.GetDataLen())
+	head.SetMsgID(msg.GetMsgID())
+
+	if err := binary.Write(dataBuff, binary.LittleEndian, head.GetDataLen()); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetMsgID()); err != nil {
+	if err := binary.Write(dataBuff, binary.LittleEndian, head.GetMsgID()); err != nil {
 		return nil, err
 	}
 
@@ -62,6 +71,6 @@ func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
 	return dataBuff.Bytes(), nil
 }
 
-func (n *NetPack) GetHeadLen() int {
-	return n.GetHeadLen()
+func (n *NetPack) GetHeadLen() int32 {
+	return n.IHead.GetHeadLen()
 }

@@ -21,8 +21,8 @@ func NewMessage(msgID uint32, data []byte) *Message {
 	}
 }
 
-func (m *Message) GetDataLen() int {
-	return len(m.Data)
+func (m *Message) GetDataLen() int32 {
+	return int32(len(m.Data))
 }
 
 func (m *Message) GetMsgID() uint32 {
