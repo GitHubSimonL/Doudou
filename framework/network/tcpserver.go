@@ -2,7 +2,6 @@ package network
 
 import (
 	"Doudou/framework/itr"
-	_default "Doudou/framework/network/default"
 )
 
 type TcpServer struct {
@@ -18,7 +17,7 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 
 	// server.SetPacket(NewNetPacket())
 	// server.SetConnMgr(NewConnMgr())
-	server.SetMsgHandlerMgr(_default.NewApiMgr(1))
+	// server.SetMsgHandlerMgr(_default.NewApiMgr(1))
 
 	for _, op := range ops {
 		op(server)

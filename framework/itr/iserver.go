@@ -18,6 +18,8 @@ type IServer interface {
 	SetConnectHookFunc(connected, disConnected func(conn IConnection)) // 设置网络连接方法
 	CallConnStartHookFunc(conn IConnection)                            // 调用链接创建hook方法
 	CallConnEndHookFunc(conn IConnection)                              // 调用链接断开hook方法
+	LoadWhiteList(filename string) bool                                // 加载白名单
+	AccessCheck(ip string) bool                                        // 是否放行
 }
 
 // server 基类实现
@@ -31,6 +33,7 @@ type BaseServer struct {
 	packet             IPacket                // 封包解包管理
 	apiMgr             IApiMgr                // 协议处理管理器
 	connMgr            IConnMgr               // 链接管理器
+	WhiteList
 }
 
 var _ IServer = (*BaseServer)(nil)
