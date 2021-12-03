@@ -6,15 +6,24 @@ import (
 	"sync"
 )
 
-type Handler struct {
-	HookFuncMap map[uint32]itr.IHandle
-	PoolSize    int
-	TaskQueue   []chan itr.IRequest
+type ApiMgr struct {
+	ApiMap    map[uint32]itr.IHandle
+	TaskQueue []chan itr.IRequest
 
 	sync.RWMutex
 }
 
-func (h *Handler) DoMsgHandler(req itr.IRequest) {
+var _ itr.IApiMgr = (*ApiMgr)(nil)
+
+func NewApiMgr(taskPoolSize int) *ApiMgr {
+	return &ApiMgr{
+		ApiMap:    make(map[uint32]itr.IHandle),
+		TaskQueue: make([]chan itr.IRequest, taskPoolSize),
+		RWMutex:   sync.RWMutex{},
+	}
+}
+
+func (h *ApiMgr) DoMsgHandler(req itr.IRequest) {
 	if req == nil {
 		return
 	}
@@ -22,7 +31,7 @@ func (h *Handler) DoMsgHandler(req itr.IRequest) {
 	h.RLock()
 	defer h.RUnlock()
 
-	handle, ok := h.HookFuncMap[req.GetMsgID()]
+	handle, ok := h.ApiMap[req.GetMsgID()]
 	if !ok {
 		logger.LogErrf("handle msgID:%v func not found.", req.GetMsgID())
 		return
@@ -33,7 +42,7 @@ func (h *Handler) DoMsgHandler(req itr.IRequest) {
 	handle.AfterHandle(req)
 }
 
-func (h *Handler) RegisterHandle(msgID uint32, handle itr.IHandle) {
+func (h *ApiMgr) RegisterHandle(msgID uint32, handle itr.IHandle) {
 	if handle == nil {
 		logger.LogWarnf("handle is nil. %v", msgID)
 		return
@@ -42,15 +51,15 @@ func (h *Handler) RegisterHandle(msgID uint32, handle itr.IHandle) {
 	h.Lock()
 	defer h.Unlock()
 
-	if _, ok := h.HookFuncMap[msgID]; ok {
+	if _, ok := h.ApiMap[msgID]; ok {
 		logger.LogWarnf("repeated register api: %v", msgID)
 		return
 	}
 
-	h.HookFuncMap[msgID] = handle
+	h.ApiMap[msgID] = handle
 }
 
-func (h *Handler) OneTask(taskIdx int, queue chan itr.IRequest) {
+func (h *ApiMgr) OneTask(taskIdx int, queue chan itr.IRequest) {
 	logger.LogDebugf("task %v start work.", taskIdx)
 	defer func() {
 		logger.LogDebugf("task %v work finish.")
@@ -68,7 +77,7 @@ func (h *Handler) OneTask(taskIdx int, queue chan itr.IRequest) {
 	}
 }
 
-func (h *Handler) StartWorkPool() {
+func (h *ApiMgr) StartWorkPool() {
 	if h.GetTaskQueueAmount() < 2 {
 		return
 	}
@@ -79,7 +88,7 @@ func (h *Handler) StartWorkPool() {
 	}
 }
 
-func (h *Handler) AddMgsToTaskPool(req itr.IRequest) {
+func (h *ApiMgr) AddMgsToTaskPool(req itr.IRequest) {
 	if req == nil {
 		return
 	}
@@ -98,6 +107,6 @@ func (h *Handler) AddMgsToTaskPool(req itr.IRequest) {
 	h.TaskQueue[idx] <- req
 }
 
-func (h *Handler) GetTaskQueueAmount() int {
-	return 2
+func (h *ApiMgr) GetTaskQueueAmount() int {
+	return len(h.TaskQueue)
 }

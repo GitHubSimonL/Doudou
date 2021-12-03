@@ -13,7 +13,7 @@ type IServer interface {
 	SetID(svrID int32)                                                 // 设置ID
 	SetIP(ip string)                                                   // 设置IP
 	SetPort(port int)                                                  // 设置端口
-	SetMsgHandlerMgr(mgr IHandleMgr)                                   // 设置协议处理器
+	SetMsgHandlerMgr(mgr IApiMgr)                                      // 设置协议处理器
 	SetConnMgr(mgr IConnMgr)                                           // 设置协议处理器
 	SetConnectHookFunc(connected, disConnected func(conn IConnection)) // 设置网络连接方法
 	CallConnStartHookFunc(conn IConnection)                            // 调用链接创建hook方法
@@ -29,7 +29,7 @@ type BaseServer struct {
 	onConnConnected    func(conn IConnection) // 简历链接hookFunc
 	onConnDisconnected func(conn IConnection) // 断开链接hookFunc
 	packet             IPacket                // 封包解包管理
-	msgHandler         IHandleMgr             // 协议处理管理器
+	apiMgr             IApiMgr                // 协议处理管理器
 	connMgr            IConnMgr               // 链接管理器
 }
 
@@ -48,11 +48,11 @@ func (b *BaseServer) Stop() {
 }
 
 func (b *BaseServer) SetHandler(msgID uint32, handle IHandle) {
-	if b.msgHandler == nil {
+	if b.apiMgr == nil {
 		return
 	}
 
-	b.msgHandler.RegisterHandle(msgID, handle)
+	b.apiMgr.RegisterHandle(msgID, handle)
 }
 
 func (b *BaseServer) GetConnMgr() IConnMgr {
@@ -87,12 +87,12 @@ func (b *BaseServer) SetPort(port int) {
 	b.port = port
 }
 
-func (b *BaseServer) SetMsgHandlerMgr(mgr IHandleMgr) {
+func (b *BaseServer) SetMsgHandlerMgr(mgr IApiMgr) {
 	if mgr == nil {
 		return
 	}
 
-	b.msgHandler = mgr
+	b.apiMgr = mgr
 }
 
 func (b *BaseServer) SetConnMgr(mgr IConnMgr) {

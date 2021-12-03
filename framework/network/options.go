@@ -45,3 +45,9 @@ func WithConnMgr(mgr IConnMgr) Option {
 		server.SetConnMgr(mgr)
 	}
 }
+
+func WithApiMgr(mgr IApiMgr) Option {
+	return func(server IServer) {
+		server.SetMsgHandlerMgr(mgr)
+	}
+}
