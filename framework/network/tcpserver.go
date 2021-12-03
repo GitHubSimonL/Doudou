@@ -21,9 +21,9 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 
 	server.SetPort(_default.DefaultPort)
 	server.SetIP(_default.DefaultIP)
-	// server.SetPacket(NewNetPacket())
-	// server.SetConnMgr(NewConnMgr())
-	// server.SetMsgHandlerMgr(_default.NewApiMgr(1))
+	server.SetPacket(_default.NewNetPacket())
+	server.SetConnMgr(_default.NewConnMgr())
+	server.SetMsgHandlerMgr(_default.NewApiMgr(1))
 
 	for _, op := range ops {
 		op(server)
