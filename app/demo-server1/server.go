@@ -4,15 +4,25 @@ import (
 	"Doudou/framework/itr"
 	"Doudou/framework/network"
 	_default "Doudou/framework/network/default"
-	"fmt"
+	"Doudou/lib/logger"
 )
 
-type TestH struct {
+type Ping struct {
 	itr.BaseHandle
 }
 
-func (th *TestH) Handle(request itr.IRequest) {
-	fmt.Printf("ConnID:%v MsgID:%v Data:%v", request.GetConnection().GetConnID(), request.GetMsgID(), request.GetData())
+func (p *Ping) AfterHandle(request itr.IRequest) {
+	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+	request.GetConnection().SendMsg(2, request.GetData())
+}
+
+type Pong struct {
+	itr.BaseHandle
+}
+
+func (p *Pong) AfterHandle(request itr.IRequest) {
+	logger.LogDebugf("After Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+	request.GetConnection().SendMsg(1, request.GetData())
 }
 
 func main() {
@@ -23,6 +33,7 @@ func main() {
 	)
 
 	servr.Start()
-	servr.SetHandler(1, &TestH{})
+	servr.SetHandler(1, &Ping{})
+	servr.SetHandler(2, &Ping{})
 	select {}
 }
