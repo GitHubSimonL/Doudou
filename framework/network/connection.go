@@ -17,7 +17,7 @@ var pool sync.Pool
 
 type Connection struct {
 	Server      itr.IServer            // 当前Conn属于哪个Server
-	conn        net.Conn               // 当前连接的socket TCP套接字
+	net.Conn                           // 当前连接的socket TCP套接字
 	connID      uint32                 // 当前连接的ID 也可以称作为SessionID，ID全局唯一
 	ApiMgr      itr.IApiMgr            // 消息管理MsgID和对应处理方法的消息管理模块
 	msgChan     chan []byte            // 无缓冲管道
@@ -51,7 +51,7 @@ func (c *Connection) Stop() {
 
 	defer func() {
 		c.cancel()
-		c.conn.Close()
+		c.Close()
 
 		close(c.msgBuffChan)
 		close(c.msgChan)
@@ -66,16 +66,8 @@ func (c *Connection) GetContext() context.Context {
 	return c.ctx
 }
 
-func (c *Connection) GetConn() net.Conn {
-	return c.GetConn()
-}
-
 func (c *Connection) GetConnID() uint32 {
 	return c.connID
-}
-
-func (c *Connection) RemoteAddr() net.Addr {
-	return c.conn.RemoteAddr()
 }
 
 func (c *Connection) SendMsg(msgID uint32, data []byte) error {
@@ -160,7 +152,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 
 	return &Connection{
 		Server:      server,
-		conn:        conn,
+		Conn:        conn,
 		connID:      connID,
 		ApiMgr:      server.GetApiMgr(),
 		msgChan:     make(chan []byte),
@@ -185,7 +177,7 @@ func (c *Connection) WriterTaskStart() {
 				return
 			}
 
-			if _, err := c.GetConn().Write(data); err != nil {
+			if _, err := c.Write(data); err != nil {
 				logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
 			}
 
@@ -195,7 +187,7 @@ func (c *Connection) WriterTaskStart() {
 				return
 			}
 
-			if _, err := c.GetConn().Write(data); err != nil {
+			if _, err := c.Write(data); err != nil {
 				logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
 			}
 
@@ -211,7 +203,7 @@ func (c *Connection) ReaderTaskStart() {
 	defer logger.LogDebugf("Conn:%v Remote:%v Reader exit!", c.GetConnID(), c.RemoteAddr().String())
 	defer c.Stop()
 
-	br := bufio.NewReader(c.GetConn())
+	br := bufio.NewReader(c)
 
 	for {
 		select {
@@ -243,7 +235,7 @@ func (c *Connection) ReaderTaskStart() {
 			data := pool.Get().([]byte)
 			if msg.GetDataLen() > 0 {
 				data = make([]byte, msg.GetDataLen())
-				if _, err := io.ReadFull(c.GetConn(), data); err != nil {
+				if _, err := io.ReadFull(c, data); err != nil {
 					if err != io.EOF {
 						logger.LogErrf("Conn:%v Remote:%v catch err.%v", c.GetConnID(), c.RemoteAddr().String(), err.Error())
 					}
