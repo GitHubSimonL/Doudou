@@ -18,10 +18,6 @@ func (n *NetPack) Unpack(binaryData []byte) (itr.IMessage, error) {
 
 	msg := &Message{}
 
-	if err := binary.Read(dataBuff, binary.LittleEndian, &msg.Len); err != nil {
-		return nil, err
-	}
-
 	if err := binary.Read(dataBuff, binary.LittleEndian, &msg.MsgID); err != nil {
 		return nil, err
 	}
