@@ -2,6 +2,7 @@ package network
 
 import (
 	"Doudou/framework/itr"
+	_default "Doudou/framework/network/default"
 	"Doudou/lib/logger"
 	"fmt"
 	"net"
@@ -18,6 +19,8 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 		BaseServer: itr.NewBaseServer(),
 	}
 
+	server.SetPort(_default.DefaultPort)
+	server.SetIP(_default.DefaultIP)
 	// server.SetPacket(NewNetPacket())
 	// server.SetConnMgr(NewConnMgr())
 	// server.SetMsgHandlerMgr(_default.NewApiMgr(1))
@@ -31,7 +34,7 @@ func NewTcpServer(ops ...itr.Option) itr.IServer {
 
 func (t *TcpServer) Start() {
 	defer func() {
-		logger.LogDebugf("server start finish.")
+		logger.LogDebugf("server start finish. ip:%v port:%v", t.GetIP(), t.GetPort())
 	}()
 
 	go func() {

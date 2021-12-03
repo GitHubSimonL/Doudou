@@ -142,7 +142,7 @@ func (b *BaseServer) GetID() int32 {
 }
 
 func (b *BaseServer) GetIP() string {
-	return b.GetIP()
+	return b.ip
 }
 
 func (b *BaseServer) GetPort() int {
