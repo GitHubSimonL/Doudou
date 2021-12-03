@@ -20,11 +20,11 @@ func (n *NetPack) UnpackHead(binaryData []byte) (itr.IHead, error) {
 
 	dataBuff := bytes.NewReader(binaryData)
 
-	if err := binary.Read(dataBuff, binary.LittleEndian, &head.MsgID); err != nil {
+	if err := binary.Read(dataBuff, binary.LittleEndian, &head.DataLen); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(dataBuff, binary.LittleEndian, &head.DataLen); err != nil {
+	if err := binary.Read(dataBuff, binary.LittleEndian, &head.MsgID); err != nil {
 		return nil, err
 	}
 
