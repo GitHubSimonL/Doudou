@@ -40,24 +40,6 @@ func (h *ApiMgr) RegisterHandle(msgID uint32, handle itr.IHandle) {
 	h.ApiMap[msgID] = handle
 }
 
-func (h *ApiMgr) OneTask(taskIdx int, queue chan itr.IRequest) {
-	logger.LogDebugf("task %v start work.", taskIdx)
-	defer func() {
-		logger.LogDebugf("task %v work finish.")
-	}()
-
-	for {
-		select {
-		case req, ok := <-queue:
-			if !ok {
-				return
-			}
-
-			h.DoMsgHandler(req)
-		}
-	}
-}
-
 func (h *ApiMgr) StartWorkPool() {
 	if h.GetTaskQueueAmount() < 2 {
 		return
@@ -109,4 +91,22 @@ func (h *ApiMgr) DoMsgHandler(req itr.IRequest) {
 	handle.PreHandle(req)
 	handle.Handle(req)
 	handle.AfterHandle(req)
+}
+
+func (h *ApiMgr) OneTask(taskIdx int, queue chan itr.IRequest) {
+	logger.LogDebugf("task %v start work.", taskIdx)
+	defer func() {
+		logger.LogDebugf("task %v work finish.")
+	}()
+
+	for {
+		select {
+		case req, ok := <-queue:
+			if !ok {
+				return
+			}
+
+			h.DoMsgHandler(req)
+		}
+	}
 }
