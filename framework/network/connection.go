@@ -186,7 +186,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 // 写任务开启
 func (c *Connection) WriterTaskStart() {
 	logger.LogDebugf("Conn:%v Writer Goroutine is running!", c.GetConnID())
-	defer logger.LogDebugf("Conn:%v Remote:%v Reader exit!", c.GetConnID(), c.RemoteAddr().String())
+	defer logger.LogDebugf("Conn:%v Remote:%v writer exit!", c.GetConnID(), c.RemoteAddr().String())
 	defer c.Stop()
 
 	for {
