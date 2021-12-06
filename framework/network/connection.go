@@ -217,6 +217,10 @@ func (c *Connection) WriterTaskStart() {
 	}
 }
 
+func (c *Connection) IsClient() bool {
+	return c.Server == nil
+}
+
 // 读任务开启
 func (c *Connection) ReaderTaskStart() {
 	logger.LogDebugf("Conn:%v Reader Goroutine is running!", c.GetConnID())
@@ -265,13 +269,20 @@ func (c *Connection) ReaderTaskStart() {
 				msg:  msg,
 			}
 
-			if c.ApiMgr.GetTaskQueueAmount() > 1 { // 多任务处理
-				c.ApiMgr.AddMgsToTaskPool(req)
+			if !c.IsClient() { // 作为server，需要将所有req交由统一一个goroutine处理
+				c.Server.WriteReq(req)
 				continue
 			}
 
-			// 单协程处理
-			c.ApiMgr.DoMsgHandler(req)
+			{ // 客户端主动发起的链接
+				if c.ApiMgr.GetTaskQueueAmount() > 1 { // 多任务处理
+					c.ApiMgr.AddMgsToTaskPool(req)
+					continue
+				}
+
+				// 单协程处理
+				c.ApiMgr.DoMsgHandler(req)
+			}
 		}
 	}
 }

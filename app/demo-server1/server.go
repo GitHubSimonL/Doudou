@@ -29,23 +29,35 @@ func (p *Pong) AfterHandle(request itr.IRequest) {
 }
 
 func main() {
-	servr := network.NewTcpServer(
+	localServer := network.NewTcpServer(
 		network.WithConnMgr(_default.NewConnMgr()),
 		network.WithApiMgr(_default.NewApiMgr(1)),
 		network.WithPacket(_default.NewNetPacket()),
 	)
 
-	servr.Start()
-	servr.SetHandler(1, &Ping{})
-	servr.SetHandler(2, &Pong{})
+	localServer.Start()
+	localServer.SetHandler(1, &Ping{})
+	localServer.SetHandler(2, &Pong{})
 
 	go func() {
 		time.Sleep(30 * time.Minute)
-		servr.Stop()
+		localServer.Stop()
 	}()
 
-	select {
-	case <-servr.StopSignal():
-		return
+	for {
+		select {
+		case <-localServer.StopSignal():
+			return
+		case req, ok := <-localServer.ReadReq():
+			if !ok {
+				return
+			}
+
+			if req == nil {
+				continue
+			}
+
+			localServer.GetApiMgr().DoMsgHandler(req)
+		}
 	}
 }

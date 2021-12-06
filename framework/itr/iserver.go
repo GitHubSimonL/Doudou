@@ -1,5 +1,7 @@
 package itr
 
+import "Doudou/lib/logger"
+
 type Option func(server IServer)
 
 type IServer interface {
@@ -17,6 +19,8 @@ type IServer interface {
 	CallConnEndHookFunc(conn IConnection)                              // 调用链接断开hook方法
 	LoadWhiteList(filename string) bool                                // 加载白名单
 	AccessCheck(ip string) bool                                        // 是否放行
+	ReadReq() chan IRequest                                            // 读客户端请求
+	WriteReq(req IRequest)
 
 	SetType(svrType int32) // 设置类型
 	SetID(svrID int32)     // 设置ID
@@ -42,7 +46,16 @@ type BaseServer struct {
 	apiMgr             IApiMgr                // 协议处理管理器
 	connMgr            IConnMgr               // 链接管理器
 	stopSignal         chan struct{}
+	reqList            chan IRequest
 	WhiteList
+}
+
+func (b *BaseServer) WriteReq(req IRequest) {
+	if req == nil || len(b.reqList) >= 256 {
+		logger.LogWarnf("req is nil or list too long. %v", len(b.reqList))
+	}
+
+	b.reqList <- req
 }
 
 var _ IServer = (*BaseServer)(nil)
@@ -50,6 +63,7 @@ var _ IServer = (*BaseServer)(nil)
 func NewBaseServer() *BaseServer {
 	return &BaseServer{
 		stopSignal: make(chan struct{}, 1),
+		reqList:    make(chan IRequest, 256),
 	}
 }
 
@@ -156,4 +170,8 @@ func (b *BaseServer) GetPort() int {
 
 func (b *BaseServer) StopSignal() chan struct{} {
 	return b.stopSignal
+}
+
+func (b *BaseServer) ReadReq() chan IRequest {
+	return b.reqList
 }
