@@ -1,0 +1,14 @@
+syntax = "proto3";
+package protocol;
+
+import "gogoproto/gogo.proto";
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_unkeyed_all)      = false;
+option (gogoproto.goproto_sizecache_all)    = false;
+
+
+// 心跳消息
+message HeartBeatReq {}
+
+// 心跳消息返回
+message HeartBeatAck {}

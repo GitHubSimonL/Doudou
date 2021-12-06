@@ -1,0 +1,10 @@
+Source: ROW-data
+Section: unknown
+Priority: extra
+Version: 1
+Maintainer: ROW <ROW@igg.com>
+Homepage: <insert the upstream URL, if relevant>
+Package: ROW-data
+Architecture: amd64
+Depends: 
+Description:data of ROW
