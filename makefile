@@ -3,8 +3,8 @@ include env.mk
 
 GO?=go
 PWD=$(shell pwd)
-GOPATH := $(PWD)
 GOBIN := $(GOPATH)/bin
+GOPATH := $(PWD)
 
 VERSION ?= M3
 REVISION ?= $(REVISION)
@@ -30,3 +30,8 @@ genpbgo:
 	clang-format -i $(ALL_PB_SRC)
 	mkdir -p $(PB_GO_SRC_DIR)
 	protoc --proto_path=$(PB_SRC_DIR) --gofast_out=$(PB_GO_SRC_DIR) $(ALL_PB_SRC)
+
+genmsg:
+	python ./scripts/client/gen_msg_go.py ${ALL_PB_SRC_OPT} --out $(PB_GO_SRC_DIR)/msg.go
+	@if [ ! -e bin/genmsgid ]; then cd ./src && GOPATH=$(GOPATH) $(GO) install server/apps/genmsgid ; fi
+	bin/genmsgid -path=/src/protocol/msgid.def
