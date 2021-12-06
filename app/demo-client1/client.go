@@ -6,6 +6,7 @@ import (
 	_default "Doudou/framework/network/default"
 	"Doudou/lib/logger"
 	"fmt"
+	"math/rand"
 	"net"
 	"time"
 )
@@ -16,7 +17,7 @@ type Ping struct {
 
 func (p *Ping) AfterHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	time.Sleep(1 * time.Second)
+	// time.Sleep(1 * time.Second)
 	request.GetConnection().SendMsg(2, request.GetData())
 }
 
@@ -26,8 +27,8 @@ type Pong struct {
 
 func (p *Pong) AfterHandle(request itr.IRequest) {
 	logger.LogDebugf("After Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	time.Sleep(1 * time.Second)
-	request.GetConnection().SendMsg(1, request.GetData())
+	// time.Sleep(1 * time.Second)
+	request.GetConnection().SendMsg(1, []byte{byte(rand.Intn(100))})
 }
 
 func main() {
@@ -56,7 +57,7 @@ func main() {
 	for {
 		select {
 		case <-ts.C:
-			selfConn.SendMsg(1, []byte{byte(1)})
+			selfConn.SendMsg(1, []byte{byte(rand.Intn(100))})
 		case <-selfConn.CloseSignal():
 			return
 		}
