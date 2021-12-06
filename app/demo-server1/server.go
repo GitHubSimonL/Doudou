@@ -14,6 +14,7 @@ type Ping struct {
 
 func (p *Ping) Handle(request itr.IRequest) {
 	logger.LogDebugf("Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+
 	time.Sleep(1 * time.Second)
 	request.GetConnection().SendMsg(2, request.GetData())
 }
@@ -24,6 +25,7 @@ type Pong struct {
 
 func (p *Pong) Handle(request itr.IRequest) {
 	logger.LogDebugf("Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+
 	time.Sleep(1 * time.Second)
 	request.GetConnection().SendMsg(1, request.GetData())
 }

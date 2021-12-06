@@ -26,7 +26,7 @@ type Connection struct {
 	isClosed    bool                   // 当前连接的关闭状态
 	ctx         context.Context        // 用于控制消息发送与接收协程间同步链接停止
 	cancel      context.CancelFunc     // 用于控制消息发送与接收协程间同步链接停止
-	metaLock    sync.Mutex             // 保护当前meta的锁
+	metaLock    sync.RWMutex           // 保护当前meta的锁
 	meta        map[string]interface{} // 链接属性
 	sync.RWMutex
 	startOnce  sync.Once
@@ -132,8 +132,9 @@ func (c *Connection) SetMeta(key string, value interface{}) {
 }
 
 func (c *Connection) GetMeta(key string) (interface{}, error) {
-	c.metaLock.Lock()
-	defer c.metaLock.Unlock()
+	c.metaLock.RLock()
+	defer c.metaLock.RUnlock()
+
 	value, ok := c.meta[key]
 	if !ok {
 		return nil, fmt.Errorf("Meta key %v not found!", key)
@@ -173,9 +174,9 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 		ApiMgr:      apiMgr,
 		msgChan:     make(chan []byte),
 		msgBuffChan: make(chan []byte, msgBufferLen),
-		RWMutex:     sync.RWMutex{},
 		meta:        make(map[string]interface{}),
-		metaLock:    sync.Mutex{},
+		metaLock:    sync.RWMutex{},
+		RWMutex:     sync.RWMutex{},
 		isClosed:    false,
 		packet:      packet,
 		closSignal:  make(chan struct{}, 1),
