@@ -12,7 +12,7 @@ type BaseHandle struct {
 }
 
 func (b *BaseHandle) PreHandle(request IRequest) {
-	// logger.LogDebugf("Before HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+	logger.LogDebugf("Before HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 }
 
 func (b *BaseHandle) Handle(request IRequest) {
@@ -20,5 +20,5 @@ func (b *BaseHandle) Handle(request IRequest) {
 }
 
 func (b *BaseHandle) AfterHandle(request IRequest) {
-	// logger.LogDebugf("After HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
+	logger.LogDebugf("After HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 }
