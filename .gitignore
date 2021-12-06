@@ -6,5 +6,5 @@
 /pkg
 /log
 /temp
-/src/protocol/*
+/protocol/*
 .env

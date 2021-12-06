@@ -28,5 +28,5 @@ dev:
 
 genpbgo:
 	clang-format -i $(ALL_PB_SRC)
-	mkdir -p $PB_GO_SRC_DIR
-	protoc --proto_path=$PB_SRC_DIR --gofast_out=$PB_GO_SRC_DIR $(ALL_PB_SRC)
+	mkdir -p $(PB_GO_SRC_DIR)
+	protoc --proto_path=$(PB_SRC_DIR) --gofast_out=$(PB_GO_SRC_DIR) $(ALL_PB_SRC)
