@@ -48,7 +48,7 @@ def gen_file():
                      "\n"
                      "package protocol\n"
                      "\n"
-                     "import \"server/base/network/parser\"\n"
+                     "import \"Doudou/framework/parser\"\n"
                      "\n"
                      "// Processor proto\n"
                      "var Processor = parser.NewProcessor()\n"
