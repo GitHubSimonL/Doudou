@@ -40,7 +40,7 @@ func (ml MsgList) Less(i, j int) bool {
 }
 
 func main() {
-	path := flag.String("path", "./src/protocol/msgid.def", "output path")
+	path := flag.String("path", "./protocol/msgid.def", "output path")
 	f, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		logger.LogErrf("export msgid to %v failed!", path)

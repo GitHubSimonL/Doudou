@@ -33,5 +33,5 @@ genpbgo:
 
 genmsg:
 	python ./scripts/client/gen_msg_go.py ${ALL_PB_SRC_OPT} --out $(PB_GO_SRC_DIR)/msg.go
-	@if [ ! -e bin/genmsgid ]; then cd ./src && GOPATH=$(GOPATH) $(GO) install server/apps/genmsgid ; fi
-	bin/genmsgid -path=/src/protocol/msgid.def
+	@if [ ! -e bin/genmsgid ]; then  GOPATH=$(GOPATH) $(GO) install Doudou/app/genmsgid ; fi
+	bin/genmsgid -path=$(PB_GO_SRC_DIR)/msgid.def
