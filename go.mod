@@ -10,6 +10,6 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.19.1
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

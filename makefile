@@ -21,6 +21,8 @@ GCFLAGS ?= ""
 
 GOFLAGS ?= -gcflags=$(GCFLAGS) -ldflags=$(LDFLAGS)
 
+$(shell if [ ! -d $(BIN_DIR) ]; then  ln -s $(GOBIN) $(PWD); fi)
+
 dev:
 	go get github.com/golang/protobuf/protoc-gen-go
 	go get github.com/gogo/protobuf/protoc-gen-gofast
