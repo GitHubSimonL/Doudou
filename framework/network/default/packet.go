@@ -54,15 +54,11 @@ func (n *NetPack) Unpack(head itr.IHead, binaryData []byte) (itr.IMessage, error
 func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
 	dataBuff := bytes.NewBuffer([]byte{})
 
-	head := n.NewHead()
-	head.SetDataLen(msg.GetDataLen())
-	head.SetMsgID(msg.GetMsgID())
-
-	if err := binary.Write(dataBuff, binary.LittleEndian, head.GetDataLen()); err != nil {
+	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetDataLen()); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(dataBuff, binary.LittleEndian, head.GetMsgID()); err != nil {
+	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetMsgID()); err != nil {
 		return nil, err
 	}
 
