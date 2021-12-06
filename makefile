@@ -4,7 +4,6 @@ include env.mk
 GO?=go
 PWD=$(shell pwd)
 GOBIN := $(GOPATH)/bin
-GOPATH := $(PWD)
 
 VERSION ?= M3
 REVISION ?= $(REVISION)
@@ -33,5 +32,5 @@ genpbgo:
 
 genmsg:
 	python ./scripts/client/gen_msg_go.py ${ALL_PB_SRC_OPT} --out $(PB_GO_SRC_DIR)/msg.go
-	@if [ ! -e bin/genmsgid ]; then  GOPATH=$(GOPATH) $(GO) install Doudou/app/genmsgid ; fi
-	bin/genmsgid -path=$(PB_GO_SRC_DIR)/msgid.def
+	@if [ ! -e $(GOBIN)/genmsgid ]; then  GOPATH=$(GOPATH) $(GO) install Doudou/app/genmsgid ; fi
+	$(GOBIN)/genmsgid -path=$(PB_GO_SRC_DIR)/msgid.def
