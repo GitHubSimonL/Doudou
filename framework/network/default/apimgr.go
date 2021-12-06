@@ -18,28 +18,9 @@ var _ itr.IApiMgr = (*ApiMgr)(nil)
 func NewApiMgr(taskPoolSize int) *ApiMgr {
 	return &ApiMgr{
 		ApiMap:    make(map[uint32]itr.IHandle),
-		TaskQueue: make([]chan itr.IRequest, taskPoolSize),
+		TaskQueue: make([]chan itr.IRequest, 0, taskPoolSize),
 		RWMutex:   sync.RWMutex{},
 	}
-}
-
-func (h *ApiMgr) DoMsgHandler(req itr.IRequest) {
-	if req == nil {
-		return
-	}
-
-	h.RLock()
-	defer h.RUnlock()
-
-	handle, ok := h.ApiMap[req.GetMsgID()]
-	if !ok {
-		logger.LogErrf("handle msgID:%v func not found.", req.GetMsgID())
-		return
-	}
-
-	handle.PreHandle(req)
-	handle.Handle(req)
-	handle.AfterHandle(req)
 }
 
 func (h *ApiMgr) RegisterHandle(msgID uint32, handle itr.IHandle) {
@@ -82,7 +63,7 @@ func (h *ApiMgr) StartWorkPool() {
 		return
 	}
 
-	for i := 0; i < int(h.GetTaskQueueAmount()); i++ {
+	for i := 0; i < h.GetTaskQueueAmount(); i++ {
 		h.TaskQueue[i] = make(chan itr.IRequest, DefaultRequestQueueLen)
 		go h.OneTask(i, h.TaskQueue[i])
 	}
@@ -108,5 +89,24 @@ func (h *ApiMgr) AddMgsToTaskPool(req itr.IRequest) {
 }
 
 func (h *ApiMgr) GetTaskQueueAmount() int {
-	return len(h.TaskQueue)
+	return cap(h.TaskQueue)
+}
+
+func (h *ApiMgr) DoMsgHandler(req itr.IRequest) {
+	if req == nil {
+		return
+	}
+
+	h.RLock()
+	defer h.RUnlock()
+
+	handle, ok := h.ApiMap[req.GetMsgID()]
+	if !ok {
+		logger.LogErrf("handle msgID:%v func not found.", req.GetMsgID())
+		return
+	}
+
+	handle.PreHandle(req)
+	handle.Handle(req)
+	handle.AfterHandle(req)
 }

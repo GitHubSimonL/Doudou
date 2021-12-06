@@ -57,7 +57,7 @@ func main() {
 				continue
 			}
 
-			localServer.GetApiMgr().DoMsgHandler(req)
+			localServer.GetApiMgr().AddMgsToTaskPool(req)
 		}
 	}
 }

@@ -186,7 +186,7 @@ func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLe
 // 写任务开启
 func (c *Connection) WriterTaskStart() {
 	logger.LogDebugf("Conn:%v Writer Goroutine is running!", c.GetConnID())
-	defer logger.LogDebugf("Conn:%v Remote:%v writer exit!", c.GetConnID(), c.RemoteAddr().String())
+	defer logger.LogDebugf("Conn:%v Remote:%v Writer exit!", c.GetConnID(), c.RemoteAddr().String())
 	defer c.Stop()
 
 	for {
@@ -275,13 +275,8 @@ func (c *Connection) ReaderTaskStart() {
 			}
 
 			{ // 客户端主动发起的链接
-				if c.ApiMgr.GetTaskQueueAmount() > 1 { // 多任务处理
-					c.ApiMgr.AddMgsToTaskPool(req)
-					continue
-				}
-
-				// 单协程处理
-				c.ApiMgr.DoMsgHandler(req)
+				c.ApiMgr.AddMgsToTaskPool(req)
+				continue
 			}
 		}
 	}
