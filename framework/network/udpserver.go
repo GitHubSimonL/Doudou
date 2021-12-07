@@ -5,6 +5,7 @@ import (
 	_default "Doudou/framework/network/default"
 	"Doudou/lib/logger"
 	"fmt"
+	kcp "github.com/xtaci/kcp-go"
 	"net"
 )
 
@@ -52,17 +53,22 @@ func (u *UdpServer) Start() {
 			return
 		}
 
-		udpConn, err := net.ListenUDP("udp", addr)
-		if err != nil || udpConn == nil {
+		kcpListener, err := kcp.ListenWithOptions(addr.String(), nil, 0, 0)
+		if err != nil || kcpListener == nil {
 			logger.LogWarnf("server start fail. err:%v", err.Error())
 			return
 		}
-		
+
 		var cid uint32 = 0
 		for {
-			conn, err := listener.()
-			if err != nil {
-				logger.LogWarnf("tcp listener catch err. %v", err)
+			conn, err := kcpListener.Accept()
+			if err != nil || conn == nil {
+				logger.LogWarnf("receive data failed", fmt.Sprintf("err %v", err))
+				continue
+			}
+
+			if !u.AccessCheck(conn.RemoteAddr().String()) {
+				logger.LogWarnf("blacklist ip connected. %v", conn.RemoteAddr().String())
 				continue
 			}
 
@@ -73,14 +79,8 @@ func (u *UdpServer) Start() {
 				continue
 			}
 
-			selfConn := NewConnection(t, conn, cid, 1024, u.GetApiMgr(), u.GetPacket())
+			selfConn := NewConnection(u, conn, cid, 1024, u.GetApiMgr(), u.GetPacket())
 			if selfConn == nil {
-				conn.Close()
-				continue
-			}
-
-			if !t.AccessCheck(selfConn.RemoteAddr().String()) {
-				logger.LogWarnf("blacklist ip connected. %v", selfConn.RemoteAddr().String())
 				conn.Close()
 				continue
 			}

@@ -24,13 +24,13 @@ func PongHandle(request itr.IRequest) {
 }
 
 func main() {
-	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", _default.DefaultIP, _default.DefaultPort))
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%v:%v", _default.DefaultIP, _default.DefaultPort))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	conn, err := net.DialTCP("tcp", nil, addr)
+	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
 		fmt.Println(err)
 		return
