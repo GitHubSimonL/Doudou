@@ -17,8 +17,8 @@ import (
 var pool sync.Pool
 
 type Connection struct {
-	Server      itr.IServer            // 当前Conn属于哪个Server
-	net.Conn                           // 当前连接的socket TCP套接字
+	Server      itr.IServer            // 当前Conn所属的server对象
+	net.Conn                           // 当前连接的socket tcp/udp套接字
 	connID      uint32                 // 当前连接的ID 也可以称作为SessionID，ID全局唯一
 	ApiMgr      itr.IApiMgr            // 消息管理MsgID和对应处理方法的消息管理模块
 	msgChan     chan []byte            // 无缓冲管道
