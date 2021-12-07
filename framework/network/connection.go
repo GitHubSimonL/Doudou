@@ -161,7 +161,16 @@ func (c *Connection) CloseSignal() chan struct{} {
 	return c.closSignal
 }
 
-// 生成一个链接对象 (当为client链接时，server对象为空)
+//  NewConnection
+//  @Description: 			创建一个链接对象
+//  @param server 			server对象，当为server端链接时需要赋值
+//  @param conn  			tcp/udp/kcp 链接对象
+//  @param connID 			链接ID
+//  @param msgBufferLen 	接收消息buffer长度
+//  @param apiMgr  			协议处理管理器
+//  @param packet			数据打包解包管理器
+//  @return *Connection
+//
 func NewConnection(server itr.IServer, conn net.Conn, connID uint32, msgBufferLen int, apiMgr itr.IApiMgr, packet itr.IPacket) *Connection {
 	if conn == nil {
 		return nil
