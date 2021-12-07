@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var data int
+
 func PingHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 	request.GetConnection().SendMsg(2, request.GetData().([]byte))
@@ -18,7 +20,7 @@ func PingHandle(request itr.IRequest) {
 
 func PongHandle(request itr.IRequest) {
 	logger.LogDebugf("After Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	request.GetConnection().SendMsg(1, []byte{byte(rand.Intn(100))})
+	request.GetConnection().SendMsg(1, []byte{byte(data)})
 }
 
 func main() {
@@ -34,6 +36,8 @@ func main() {
 		return
 	}
 
+	data = rand.New(rand.NewSource(time.Now().Unix())).Intn(100)
+
 	apiMgr := _default.NewApiMgr(1)
 	apiMgr.RegisterHandle(1, PingHandle)
 	apiMgr.RegisterHandle(2, PongHandle)
@@ -47,7 +51,7 @@ func main() {
 	for {
 		select {
 		case <-ts.C:
-			selfConn.SendMsg(1, []byte{byte(rand.Intn(100))})
+			selfConn.SendMsg(1, []byte{byte(data)})
 		case <-selfConn.CloseSignal():
 			return
 		}
