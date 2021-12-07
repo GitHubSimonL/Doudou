@@ -21,24 +21,6 @@ type msg struct {
 	Name string
 }
 
-// MsgList 用于排序
-type MsgList []*msg
-
-// Len 长度
-func (ml MsgList) Len() int {
-	return len(ml)
-}
-
-// Swap 交换i, j
-func (ml MsgList) Swap(i, j int) {
-	ml[i], ml[j] = ml[j], ml[i]
-}
-
-// Less elem(i) < elem(j)
-func (ml MsgList) Less(i, j int) bool {
-	return ml[i].ID < ml[j].ID
-}
-
 func main() {
 	path := flag.String("path", "./protocol/msgid.def", "output path")
 	f, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE, 0666)
@@ -46,21 +28,27 @@ func main() {
 		logger.LogErrf("export msgid to %v failed!", path)
 		return
 	}
+
 	defer f.Close()
-	var msglist MsgList
+	var msgList []*msg
+
 	protocol.Processor.Range(func(id uint32, t reflect.Type) {
-		// logger.Infof("export: %s", t.Elem().MailTitle())
-		msglist = append(msglist, &msg{
+		msgList = append(msgList, &msg{
 			ID:   id,
 			Name: t.Elem().Name(),
 		})
 	})
-	sort.Sort(msglist)
+
+	sort.Slice(msgList, func(i, j int) bool {
+		return msgList[i].ID < msgList[j].ID
+	})
+
 	_ = f.Truncate(0) // 清空文件内容
 	writer := bufio.NewWriter(f)
-	for _, m := range msglist {
+	for _, m := range msgList {
 		_, _ = writer.WriteString(fmt.Sprintf("%d %s\n", m.ID, m.Name))
 	}
+
 	_ = writer.Flush()
 	logger.Logf("export msgid to %s complete", *path)
 }
