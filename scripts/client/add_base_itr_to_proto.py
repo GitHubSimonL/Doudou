@@ -4,35 +4,27 @@ import getopt
 import re
 import sys
 
-inpaths = []
-outfile = ""
+inPaths = []
 
 
 def usage():
-    print("gen_req_proto.py: gen msg.go\n"
+    print("add_base_itr_to_proto.py: \n"
           "args: \n"
-          " --in path   eg: protocol/api.proto\n"
-          " --out file  eg: src/protobuf/msg.go\n"
+          " --in path   eg: protocol/demo1.pb.go\n"
           "eg: \n"
-          " gen_req_proto.py --in protocol/api.proto --in protocol/internal_api.proto --out protocol/msg.go")
+          " add_base_itr_to_proto.py --in protocol/demo1.pb.go")
 
 
 def get_opt():
     try:
-        options, args = getopt.getopt(sys.argv[1:], "", ["in=", "out=", "help"])
+        options, args = getopt.getopt(sys.argv[1:], "", ["in=", "help"])
         for name, value in options:
             if name == '--in':
-                global inpaths
-                inpaths.append(value)
-            if name == '--out':
-                global outfile
-                outfile = value
+                global inPaths
+                inPaths.append(value)
             if name == '--help':
                 usage()
                 return False
-
-        if outfile == "":
-            return False
 
         return True
     except Exception as e:
@@ -41,45 +33,40 @@ def get_opt():
         return False
 
 
-def gen_file():
-    outFp = open(outfile, "w")
-
-    outFp.writelines("// generate by gen_msg.gp.py . DO NOT EDIT\n"
-                     "\n"
-                     "package protocol\n"
-                     "\n"
-                     "import \"Doudou/framework/parser\"\n"
-                     "import  . \"Doudou/framework/itr\"\n"
-                     "\n"
-                     "// Processor proto\n"
-                     "var Processor = parser.NewProcessor()\n"
-                     "// Init register msg\n"
-                     "func init () {\n"
-                     )
-
-    for fname in inpaths:
+def sedFile():
+    print("sed ====")
+    for fname in inPaths:
         fp = open(fname, "r")
-        outFp.writelines("// " + fname + "\n")
+        lines = []
+
         for line in fp:
-            # message xxxReq {
-            ret0 = re.match("^\s*message\s+[a-zA-Z_][a-zA-Z0-9_]*Req\s*{|"
-                            "^\s*message\s+[a-zA-Z_][a-zA-Z0-9_]*Ack\s*{|"
-                            "^\s*message\s+[a-zA-Z_][a-zA-Z0-9_]*Ntf\s*{|", line)
+            lines.append(line)
 
-            if ret0:
-                ret1 = re.findall("[a-zA-Z_][a-zA-Z0-9_]*", ret0.group())
+        fp.close()
 
-                if ret1:
-                    s = "Processor.Register((*" + ret1[1] + ")(nil))\n"
-                    outFp.writelines(s)
+        for index, line in enumerate(lines):
+            ret0 = re.match("^\s*type\s+[a-zA-Z_][a-zA-Z0-9_]*Req\s*struct\s*{|"
+                            "^\s*type\s+[a-zA-Z_][a-zA-Z0-9_]*Ack\s*struct\s*{|"
+                            "^\s*type\s+[a-zA-Z_][a-zA-Z0-9_]*Ntf\s*struct\s*{|", line)
+            if ret0.group():
+               print(line)
+#                 ret1 = re.findall("[a-zA-Z_][a-zA-Z0-9_]*", ret0.group())
 
-    outFp.writelines("}\n")
+
+
+
+#                 if ret1:
+#                     s = "Processor.Register((*" + ret1[1] + ")(nil))\n"
+#                     outFp.writelines(s)
+#                        print(ret1[1])
+
+#     outFp.writelines("}\n")
 
 
 def gen():
     if get_opt() == False:
         return
-    gen_file()
+    sedFile()
 
 
 if __name__ == '__main__':
