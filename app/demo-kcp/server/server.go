@@ -23,7 +23,7 @@ func PongHandle(request itr.IRequest) {
 }
 
 func main() {
-	localServer := network.NewUdpServer(
+	localServer := network.NewKcpServer(
 		network.WithConnMgr(_default.NewConnMgr()),
 		network.WithApiMgr(_default.NewApiMgr(1)),
 		network.WithPacket(_default.NewNetPacket()),

@@ -6,6 +6,7 @@ import (
 	_default "Doudou/framework/network/default"
 	"Doudou/lib/logger"
 	"fmt"
+	"github.com/xtaci/kcp-go"
 	"math/rand"
 	"net"
 	"time"
@@ -30,7 +31,7 @@ func main() {
 		return
 	}
 
-	conn, err := net.DialUDP("udp", nil, addr)
+	conn, err := kcp.Dial(addr.String())
 	if err != nil {
 		fmt.Println(err)
 		return

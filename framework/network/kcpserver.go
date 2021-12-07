@@ -9,14 +9,14 @@ import (
 	"net"
 )
 
-type UdpServer struct {
+type KcpServer struct {
 	*itr.BaseServer
 }
 
-var _ itr.IServer = (*UdpServer)(nil)
+var _ itr.IServer = (*KcpServer)(nil)
 
-func NewUdpServer(ops ...itr.Option) itr.IServer {
-	server := &UdpServer{
+func NewKcpServer(ops ...itr.Option) itr.IServer {
+	server := &KcpServer{
 		BaseServer: itr.NewBaseServer(),
 	}
 
@@ -33,7 +33,7 @@ func NewUdpServer(ops ...itr.Option) itr.IServer {
 	return server
 }
 
-func (u *UdpServer) Start() {
+func (u *KcpServer) Start() {
 	defer func() {
 		logger.LogDebugf("server start finish. ip:%v port:%v", u.GetIP(), u.GetPort())
 	}()
@@ -91,7 +91,7 @@ func (u *UdpServer) Start() {
 	}()
 }
 
-func (u *UdpServer) Stop() {
+func (u *KcpServer) Stop() {
 	defer func() {
 		logger.LogDebugf("server stop finish.")
 	}()
