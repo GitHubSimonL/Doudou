@@ -8,26 +8,18 @@ import (
 	"time"
 )
 
-type Ping struct {
-	itr.BaseHandle
-}
-
-func (p *Ping) Handle(request itr.IRequest) {
+func PingHandle(request itr.IRequest) {
 	logger.LogDebugf("Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 
 	time.Sleep(1 * time.Second)
-	request.GetConnection().SendMsg(2, request.GetData())
+	request.GetConnection().SendMsg(2, request.GetData().([]byte))
 }
 
-type Pong struct {
-	itr.BaseHandle
-}
-
-func (p *Pong) Handle(request itr.IRequest) {
+func PongHandle(request itr.IRequest) {
 	logger.LogDebugf("Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 
 	time.Sleep(1 * time.Second)
-	request.GetConnection().SendMsg(1, request.GetData())
+	request.GetConnection().SendMsg(1, request.GetData().([]byte))
 }
 
 func main() {
@@ -38,8 +30,8 @@ func main() {
 	)
 
 	localServer.Start()
-	localServer.SetHandler(1, &Ping{})
-	localServer.SetHandler(2, &Pong{})
+	localServer.SetHandler(1, PingHandle)
+	localServer.SetHandler(2, PongHandle)
 
 	go func() {
 		time.Sleep(30 * time.Minute)

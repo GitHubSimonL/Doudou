@@ -7,7 +7,7 @@ type Option func(server IServer)
 type IServer interface {
 	Start()                                                            // 启动服务器
 	Stop()                                                             // 停止
-	SetHandler(msgID uint32, handle IHandle)                           // 根据MsgID设置handle方法
+	SetHandler(msgID uint32, handle HandleFunc)                        // 根据MsgID设置handle方法
 	GetApiMgr() IApiMgr                                                // 协议处理管理器
 	GetPacket() IPacket                                                // 数据打包与解包对象
 	SetPacket(IPacket)                                                 // 设置数据打包与解包对象
@@ -75,7 +75,7 @@ func (b *BaseServer) Stop() {
 	panic("implement me")
 }
 
-func (b *BaseServer) SetHandler(msgID uint32, handle IHandle) {
+func (b *BaseServer) SetHandler(msgID uint32, handle HandleFunc) {
 	if b.apiMgr == nil {
 		return
 	}

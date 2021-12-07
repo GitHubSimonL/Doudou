@@ -7,7 +7,7 @@ import (
 )
 
 type ApiMgr struct {
-	ApiMap    map[uint32]itr.IHandle
+	ApiMap    map[uint32]itr.HandleFunc
 	TaskQueue []chan itr.IRequest
 
 	sync.RWMutex
@@ -17,14 +17,14 @@ var _ itr.IApiMgr = (*ApiMgr)(nil)
 
 func NewApiMgr(taskPoolSize int) *ApiMgr {
 	return &ApiMgr{
-		ApiMap:    make(map[uint32]itr.IHandle),
+		ApiMap:    make(map[uint32]itr.HandleFunc),
 		TaskQueue: make([]chan itr.IRequest, 0, taskPoolSize),
 		RWMutex:   sync.RWMutex{},
 	}
 }
 
-func (h *ApiMgr) RegisterHandle(msgID uint32, handle itr.IHandle) {
-	if handle == nil {
+func (h *ApiMgr) RegisterHandle(msgID uint32, fn itr.HandleFunc) {
+	if fn == nil {
 		logger.LogWarnf("handle is nil. %v", msgID)
 		return
 	}
@@ -37,7 +37,7 @@ func (h *ApiMgr) RegisterHandle(msgID uint32, handle itr.IHandle) {
 		return
 	}
 
-	h.ApiMap[msgID] = handle
+	h.ApiMap[msgID] = fn
 }
 
 func (h *ApiMgr) StartWorkPool() {
@@ -88,9 +88,7 @@ func (h *ApiMgr) DoMsgHandler(req itr.IRequest) {
 		return
 	}
 
-	handle.PreHandle(req)
-	handle.Handle(req)
-	handle.AfterHandle(req)
+	handle(req)
 }
 
 func (h *ApiMgr) OneTask(taskIdx int, queue chan itr.IRequest) {

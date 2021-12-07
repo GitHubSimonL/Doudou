@@ -11,20 +11,12 @@ import (
 	"time"
 )
 
-type Ping struct {
-	itr.BaseHandle
-}
-
-func (p *Ping) Handle(request itr.IRequest) {
+func PingHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	request.GetConnection().SendMsg(2, request.GetData())
+	request.GetConnection().SendMsg(2, request.GetData().([]byte))
 }
 
-type Pong struct {
-	itr.BaseHandle
-}
-
-func (p *Pong) Handle(request itr.IRequest) {
+func PongHandle(request itr.IRequest) {
 	logger.LogDebugf("After Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
 	request.GetConnection().SendMsg(1, []byte{byte(rand.Intn(100))})
 }
@@ -43,8 +35,8 @@ func main() {
 	}
 
 	apiMgr := _default.NewApiMgr(1)
-	apiMgr.RegisterHandle(1, &Ping{})
-	apiMgr.RegisterHandle(2, &Pong{})
+	apiMgr.RegisterHandle(1, PingHandle)
+	apiMgr.RegisterHandle(2, PongHandle)
 
 	selfConn := network.NewConnection(nil, conn, 0, 1024, apiMgr, _default.NewNetPacket())
 	go selfConn.Start()

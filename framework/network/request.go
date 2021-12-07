@@ -15,7 +15,7 @@ func (r *Request) GetConnection() itr.IConnection {
 	return r.conn
 }
 
-func (r *Request) GetData() []byte {
+func (r *Request) GetData() interface{} {
 	return r.msg.GetData()
 }
 

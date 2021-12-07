@@ -29,7 +29,7 @@ func (m *Message) GetMsgID() uint32 {
 	return m.MsgID
 }
 
-func (m *Message) GetData() []byte {
+func (m *Message) GetData() interface{} {
 	return m.Data
 }
 
