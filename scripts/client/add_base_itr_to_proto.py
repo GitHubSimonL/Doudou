@@ -34,9 +34,8 @@ def get_opt():
 
 
 def sedFile():
-    print("sed ====")
-    for fname in inPaths:
-        fp = open(fname, "r")
+    for fileName in inPaths:
+        fp = open(fileName, "r")
         lines = []
 
         for line in fp:
@@ -49,18 +48,12 @@ def sedFile():
                             "^\s*type\s+[a-zA-Z_][a-zA-Z0-9_]*Ack\s*struct\s*{|"
                             "^\s*type\s+[a-zA-Z_][a-zA-Z0-9_]*Ntf\s*struct\s*{|", line)
             if ret0.group():
-               print(line)
-#                 ret1 = re.findall("[a-zA-Z_][a-zA-Z0-9_]*", ret0.group())
-
-
-
-
-#                 if ret1:
-#                     s = "Processor.Register((*" + ret1[1] + ")(nil))\n"
-#                     outFp.writelines(s)
-#                        print(ret1[1])
-
-#     outFp.writelines("}\n")
+               lines.insert(index+1,"\titr.BaseHandle\n")
+               continue
+        with open(fileName,"w") as f:
+                for line in lines:
+                    f.write(line)
+                f.close()
 
 
 def gen():

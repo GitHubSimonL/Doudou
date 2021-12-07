@@ -32,7 +32,7 @@ genpbgo:
 	mkdir -p $(PB_GO_SRC_DIR)
 	protoc --proto_path=$(PB_SRC_DIR) --gofast_out=$(PB_GO_SRC_DIR) $(ALL_PB_SRC)
 
-additr:
+additr:genpbgo
 	python ./scripts/client/add_base_itr_to_proto.py --in $(PB_GO_SRC_DIR)/*.pb.go
 
 genmsg:
