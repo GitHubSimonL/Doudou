@@ -52,6 +52,7 @@ func main() {
 			}
 
 			localServer.GetApiMgr().AddMgsToTaskPool(req)
+			logger.LogDebugf("remote:%v", req.GetConnection().RemoteAddr())
 		}
 	}
 }

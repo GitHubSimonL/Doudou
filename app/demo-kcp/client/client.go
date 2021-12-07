@@ -7,10 +7,13 @@ import (
 	"Doudou/lib/logger"
 	"fmt"
 	"github.com/xtaci/kcp-go"
-	"math/rand"
 	"net"
+	"os"
+	"strconv"
 	"time"
 )
+
+var Data int
 
 func PingHandle(request itr.IRequest) {
 	logger.LogDebugf("After Ping HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
@@ -19,7 +22,7 @@ func PingHandle(request itr.IRequest) {
 
 func PongHandle(request itr.IRequest) {
 	logger.LogDebugf("After Pong HandleMsg. Msg:%v Data:%v", request.GetMsgID(), request.GetData())
-	request.GetConnection().SendMsg(1, []byte{byte(rand.Intn(100))})
+	request.GetConnection().SendMsg(1, []byte{byte(Data)})
 }
 
 func main() {
@@ -35,6 +38,13 @@ func main() {
 		return
 	}
 
+	Data, err = strconv.Atoi(os.Args[1])
+	if err != nil {
+		return
+	}
+
+	Data = Data % 100
+
 	apiMgr := _default.NewApiMgr(1)
 	apiMgr.RegisterHandle(1, PingHandle)
 	apiMgr.RegisterHandle(2, PongHandle)
@@ -48,7 +58,7 @@ func main() {
 	for {
 		select {
 		case <-ts.C:
-			selfConn.SendMsg(1, []byte{byte(rand.Intn(100))})
+			selfConn.SendMsg(1, []byte{byte(Data)})
 		case <-selfConn.CloseSignal():
 			return
 		}
