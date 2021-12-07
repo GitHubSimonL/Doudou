@@ -4,6 +4,7 @@ import (
 	"Doudou/framework/itr"
 	"bytes"
 	"encoding/binary"
+	"errors"
 )
 
 type NetPack struct {
@@ -11,6 +12,12 @@ type NetPack struct {
 }
 
 var _ itr.IPacket = (*NetPack)(nil)
+
+func NewNetPacket() itr.IPacket {
+	return &NetPack{
+		IHead: &itr.Head{},
+	}
+}
 
 func (n *NetPack) UnpackHead(binaryData []byte) (itr.IHead, error) {
 	head := &itr.Head{
@@ -29,26 +36,6 @@ func (n *NetPack) UnpackHead(binaryData []byte) (itr.IHead, error) {
 	}
 
 	return head, nil
-}
-
-func NewNetPacket() itr.IPacket {
-	return &NetPack{
-		IHead: &itr.Head{},
-	}
-}
-
-func (n *NetPack) Unpack(head itr.IHead, binaryData []byte) (itr.IMessage, error) {
-	dataBuff := bytes.NewReader(binaryData)
-
-	msg := &Message{}
-
-	if err := binary.Read(dataBuff, binary.LittleEndian, &msg.Data); err != nil {
-		return nil, err
-	}
-
-	msg.SetMsgID(head.GetMsgID())
-
-	return msg, nil
 }
 
 func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
@@ -71,4 +58,18 @@ func (n *NetPack) Pack(msg itr.IMessage) ([]byte, error) {
 
 func (n *NetPack) GetHeadLen() int32 {
 	return n.IHead.GetHeadLen()
+}
+
+func (n *NetPack) Unpack2IRequest(conn itr.IConnection, msgID uint32, binaryData []byte) (itr.IRequest, error) {
+	if conn == nil {
+		return nil, errors.New("param is nil")
+	}
+
+	return &Request{
+		conn: conn,
+		msg: &Message{
+			MsgID: msgID,
+			Data:  binaryData,
+		},
+	}, nil
 }

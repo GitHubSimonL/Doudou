@@ -271,12 +271,11 @@ func (c *Connection) ReaderTaskStart() {
 				}
 			}
 
-			msg := NewMessage(head.GetMsgID(), data)
 			c.SetDeadline(time.Now().Add(DefaultConnectionTTL))
 
-			req := &Request{
-				conn: c,
-				msg:  msg,
+			req, err := c.packet.Unpack2IRequest(c, head.GetMsgID(), data)
+			if err != nil {
+				return
 			}
 
 			if !c.IsClient() { // 作为server，需要将所有req交由统一一个goroutine处理
