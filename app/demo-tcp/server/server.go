@@ -27,6 +27,7 @@ func main() {
 		network.WithConnMgr(_default.NewConnMgr()),
 		network.WithApiMgr(_default.NewApiMgr(1)),
 		network.WithPacket(_default.NewNetPacket()),
+		network.WithPort(10010),
 	)
 
 	localServer.Start()
@@ -34,7 +35,7 @@ func main() {
 	localServer.SetHandler(2, PongHandle)
 
 	go func() {
-		time.Sleep(30 * time.Minute)
+		time.Sleep(5 * time.Minute)
 		localServer.Stop()
 	}()
 
